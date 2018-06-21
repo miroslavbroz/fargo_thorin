@@ -45,6 +45,9 @@ void AdvanceSystemFromDisk ();
 real ConstructSequence ();
 void InitGas ();
 void AccreteOntoPlanets ();
+real rho_func ();
+real trapzd ();
+real qtrap ();
 void FindOrbitalElements ();
 int FindNumberOfPlanets ();
 PlanetarySystem *AllocPlanetSystem ();
@@ -195,3 +198,5 @@ void BckpFieldsForBC ();
 void ParametricAccretion ();
 /* #THORIN: tools */
 void CreateTorqueMapInfile ();
+void Heating1 ();
+
