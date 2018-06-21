@@ -20,6 +20,17 @@ original code by Frédéric Masset
                                 /* von Neumann-Richtmyer viscosity constant */
 				/* Beware of misprint in Stone and Norman's */
 				/* paper : use C2^2 instead of C2           */
+
+#define c_max(a,b) \
+  ({ __typeof__ (a) _a = (a); \
+     __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
+
+#define c_min(a,b) \
+  ({ __typeof__ (a) _a = (a); \
+     __typeof__ (b) _b = (b); \
+     _a < _b ? _a : _b; })
+
 static PolarGrid *TemperInt;
 static PolarGrid *VradNew,   *VradInt;
 static PolarGrid *VthetaNew, *VthetaInt;
@@ -584,6 +595,7 @@ real deltaT;
   /* debugging variables */
   real *vt, *vr, dxrad, dxtheta, dvr, dvt, viscr=0., visct=0.;
   real *soundspeed;	/* #THORIN */
+  static int count=0;
   /* ----- */
   ns = Vtheta->Nsec;
   nr = Vtheta->Nrad;
@@ -656,6 +668,17 @@ real deltaT;
     dt = 2.0*PI*CFLSECURITY/(real)NSEC/fabs(Vmoy[i]*InvRmed[i]-Vmoy[i+1]*InvRmed[i+1]);
     if (dt < newdt) newdt = dt;
   }
+  if (newdt > dt_stellar) {
+    #define FACTORSTEP 1.0
+    newdt = c_min(newdt, c_max(FACTORSTEP*dt_stellar, MINIMUMSTEP));
+  }
+  newdt = c_min(newdt, MAXIMUMSTEP);
+  if (count == 0) {
+    if (FIRSTSTEP > 0.0) {
+      newdt = FIRSTSTEP;
+    }
+    count = 1;
+  }
   if (deltaT < newdt) newdt = deltaT;
   if (debug == YES) {
     printf ("Timestep control information for CPU %d: \n", CPU_Rank);
@@ -669,6 +692,7 @@ real deltaT;
     printf ("   and from theta with limit   : %g\n", visct);
     printf ("Physical viscosity limit       : %g\n", itdbg5);
     printf ("Limit time step for this cell  : %g\n", mdtdbg);
+    printf ("Stellar/Energy diffusion limit : %g\n", dt_stellar);
     printf ("Limit time step adopted        : %g\n", newdt);
     if (newdt < mdtdbg) {
       printf ("Discrepancy arise either from shear.\n");

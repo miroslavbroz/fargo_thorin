@@ -63,3 +63,4 @@ extern char NewOutputdir[1024];
 extern FILE *plout, *discard, *mergers;  /* #THORIN */
 extern real (*opacity_func)(real, real);
 extern boolean AlphaFlock;
+extern real dt_stellar;

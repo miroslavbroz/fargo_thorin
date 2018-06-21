@@ -109,3 +109,6 @@ extern	real	GASFLUX;
 extern	char	DAMPING[512];
 extern	real	EVAPORATIONTEMPERATURE;
 extern	real	EVAPORATIONRATE;
+extern	real	FIRSTSTEP;
+extern	real	MINIMUMSTEP;
+extern	real	MAXIMUMSTEP;

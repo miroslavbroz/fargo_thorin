@@ -204,3 +204,4 @@ real opacity_ZHU12 ();
 real opacity_LP85 ();
 void EvaporatePebbles ();
 void Heating1 ();
+void DiffusionTimestep ();
