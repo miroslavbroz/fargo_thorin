@@ -128,15 +128,15 @@ PolarGrid *Rho, *Vrad;
     /* drift-limited size */
     tau1 = sqrt(3.0)*PEBBLECOAGULATION*pebbleflux/(32.0*PI*pow(Rmed[i],-1.5)*rho1);	// dominant Stokes number from 2 parameters + hydro quantities
     tau1 = sqrt(tau1)/(Rmed[i]*etacc1);
-    psize1 = sqrt(ADIABIND)*fabs(tau1)*rho1/(2.0*pebbulkdens);     // pebble size corresponding to the dominant Stokes from Epstein law
+    psize1 = fabs(tau1) * sqrt(ADIABIND)*rho1/(2.0*pebbulkdens);     // pebble size corresponding to the dominant Stokes from Epstein law
 
-    /* differential-drift size, Birnstiel et al. (2012), Eq. (20) */
+    /* differential-drift size, Birnstiel et al. (2012), Eq. (20), but NOT Eq. (2) */
     taudf = FRAGMENTTHRESHOLD*sqrt(Rmed[i])/(2.0*etacc1*(1.0-Ndf));
-    adf = 2.0*rho1/(PI*pebbulkdens) * fabs(taudf);
+    adf = fabs(taudf) * sqrt(ADIABIND)*rho1/(2.0*pebbulkdens);
 
     /* fragmentation-limited size, Birnstiel et al. (2012), Eq. (8) */
     taufrag = FRAGMENTFACTOR/(3.0*FRAGMENTALPHA) * pow(FRAGMENTTHRESHOLD/cs1, 2);
-    afrag = 2.0*rho1/(PI*pebbulkdens) * taufrag;
+    afrag = fabs(taufrag) * sqrt(ADIABIND)*rho1/(2.0*pebbulkdens);
 
     if (debug == YES)
       printf("psize1 = %e m --  adf = %e m --   afrag = %e m\n", psize1*AU_SI, adf*AU_SI, afrag*AU_SI);
