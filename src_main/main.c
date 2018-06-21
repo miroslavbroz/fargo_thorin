@@ -11,7 +11,7 @@ original code by Frédéric Masset
 
 #include "fargo.h"
 
-boolean         Restart = NO, OpenInner = NO;
+boolean         Restart = NO, OpenInner = NO, OpenOuter = NO;
 int             begin_i = 0, NbRestart = 0;
 static int      InnerOutputCounter=0, StillWriteOneOutput;
 extern real     LostMass;
