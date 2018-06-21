@@ -65,6 +65,7 @@ struct reb_collision coll;
     fprintf (mergers, "%d\t%f\t%.8g\n", particles[pk].hash, particles[pk].m, particles[pk].r);
     fprintf (mergers, "%#.18g\t%#.18g\t%#.18g\n", particles[pk].x, particles[pk].y, particles[pk].z);
     fprintf (mergers, "%#.18g\t%#.18g\t%#.18g\n", particles[pk].vx, particles[pk].vy, particles[pk].vz);
+    fflush (mergers);
     masterprint ("No. of planets after the merger: %d\n", rsim->N_active-1);
   }
   return value;
@@ -391,6 +392,7 @@ struct reb_simulation *rsim;
       orbit.Omega, orbit.omega, orbit.f,
       particles[i].m*MassTaper, particles[i].gas*MassTaper, particles[i].solid*MassTaper,
       particles[i].r, particles[i].x, particles[i].y, particles[i].z);    
+    ffflush (plout);
   }
 }
 
