@@ -21,5 +21,5 @@
 # to compile the code using the THORIN build.
 
 make -f makefile.reb.openmp
-export FARGO_ARCH=THORIN_OPENMP
+export FARGO_ARCH=PLEIADES_OPENMP
 make BUILD=parallel

@@ -25,7 +25,8 @@ Sun ------------------.     .------          |    . rho =~ exp(-z^2)
 
 #include "fargo.h"
 
-#define QTRAPEPS 1.e-6
+#define QTRAPEPS 1.e-4
+#define QTRAPMAX 16
 
 #define MIN(a,b) ((a) < (b) ? (a) : (b));
 #define MAX(a,b) ((a) > (b) ? (a) : (b));
@@ -193,8 +194,6 @@ real trapzd(real (*func)(real), real a, real b, int n) {
 }
 
 /* Integration with required relative precision (eps) */
-
-#define QTRAPMAX 20
 
 real qtrap(real (*func)(real), real a, real b, real eps)
 {
