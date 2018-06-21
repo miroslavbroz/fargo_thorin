@@ -362,7 +362,6 @@ PolarGrid *Vrad, *Vtheta, *Rho, *Energy;
 real step;
 {
   int i, j, l, ns;
-  int nr; // dbg
   real *vrad, *vtheta, *rho, *energy;
   real vrad0, vtheta0=0.0, rho0, energy0;
   real DRin, DRout, lambda;
@@ -370,10 +369,8 @@ real step;
   vrad = Vrad->Field;
   vtheta = Vtheta->Field;
   ns = Vrad->Nsec;
-  nr = Vrad->Nrad;  // dbg
   rho = Rho->Field;
   energy = Energy->Field;
-//  printf("D");  // dbg
   DRin = RMIN*DAMPINGRMINFRAC;
   DRout = RMAX*DAMPINGRMAXFRAC;
 #pragma omp parallel default(none) \

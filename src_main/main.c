@@ -74,7 +74,7 @@ char *argv[];
 	FakeSequential = YES;
       if (strchr (argv[i], 'i'))
 	StoreSigma = YES;
-        if (EnergyEq) StoreEnergy = YES;	/* #THORIN */
+      if (EnergyEq) StoreEnergy = YES;	/* #THORIN */
       if (strchr (argv[i], '0'))
 	OnlyInit = YES;
       if ((argv[i][1] >= '1') && (argv[i][1] <= '9')) {
