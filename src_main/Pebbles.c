@@ -82,10 +82,13 @@ PolarGrid *Rho, *Vrad;
 {
   static real pebbleflux=0.0;
   int i,j,l,nr,ns;
-  real *rho, *vr, *etafc, *etacc, *psize, *tau, *pdens, *pvr, *pvt;
+  real *rho, *vr, *etafc, *etacc, *psize, *tau, *pdens, *pvr, *pvt, *cs;
   real rho1, vr1, etafc1, etacc1;	// index 1 is for azimuthally averaged vars
   real pdens1, psize1, tau1, pvr1, pvt1;
   real vtcorr, vkepl, fac, etaterm, pvrtemp;
+  int n1, n2, n3;
+  real taufrag, afrag, cs1;
+  real taudf, adf, Ndf = 0.5;  // N = St2/St1, i.e. ratio of Stokes numbers for differential drift
   char command[1024];
   if (pebbleflux==0.0) pebbleflux = PEBBLEFLUX*FLUX2CU;
   pdens = PebbleDens->Field;
@@ -99,27 +102,54 @@ PolarGrid *Rho, *Vrad;
   etacc = EtaCellCentered->Field;
   nr = Rho->Nrad;
   ns = Rho->Nsec;
+  cs = SoundSpeed->Field;
+  n1 = n2 = n3 = 0;
   for (i=0; i<nr; i++) {
     // prepare azimuthally averaged quantities for constructing 1D radial profiles
     rho1 = 0.0;
     vr1 = 0.0;
     etafc1 = 0.0;
     etacc1 = 0.0;
+    cs1 = 0.0;
     for (j=0; j<ns; j++) {
       l = j + i*ns;
       rho1 += rho[l];
       vr1 += vr[l];
       etafc1 += etafc[l];
       etacc1 += etacc[l];
+      cs1 += cs[l];
     }
     rho1 /= (real)ns;
     vr1 /= (real)ns;
     etafc1 /= (real)ns;
     etacc1 /= (real)ns;
+    cs1 /= (real)ns;
     // 1D steady-state profiles
+    /* drift-limited size */
     tau1 = sqrt(3.0)*PEBBLECOAGULATION*pebbleflux/(32.0*PI*pow(Rmed[i],-1.5)*rho1);	// dominant Stokes number from 2 parameters + hydro quantities
     tau1 = sqrt(tau1)/(Rmed[i]*etacc1);
-    psize1 = sqrt(ADIABIND)*tau1*rho1/(2.0*pebbulkdens);     // pebble size corresponding to the dominant Stokes from Epstein law
+    psize1 = sqrt(ADIABIND)*fabs(tau1)*rho1/(2.0*pebbulkdens);     // pebble size corresponding to the dominant Stokes from Epstein law
+
+    /* differential-drift size, Birnstiel et al. (2012), Eq. (20) */
+    taudf = FRAGMENTTHRESHOLD*sqrt(Rmed[i])/(2.0*etacc1*(1.0-Ndf));
+    adf = 2.0*rho1/(PI*pebbulkdens) * fabs(taudf);
+
+    /* fragmentation-limited size, Birnstiel et al. (2012), Eq. (8) */
+    taufrag = FRAGMENTFACTOR/(3.0*FRAGMENTALPHA) * pow(FRAGMENTTHRESHOLD/cs1, 2);
+    afrag = 2.0*rho1/(PI*pebbulkdens) * taufrag;
+
+    if ((psize1 < adf) && (psize1 < afrag)) {
+      n1++;
+    } else if ((taudf > 0.0) && (adf < psize1) && (adf < afrag)) {
+      tau1 = taudf;
+      psize1 = adf;
+      n2++;
+    } else {
+      tau1 = taufrag;
+      psize1 = afrag;
+      n3++;
+    }
+
     vtcorr = Rmed[i]*OmegaFrame;				// steady-state drift velocity part, serves also as the initialization |--------->
     vkepl = pow (Rmed[i], -0.5);
     fac = 1.0/(tau1*tau1 + 1.0);
@@ -130,6 +160,12 @@ PolarGrid *Rho, *Vrad;
     pvt1 = -fac*(etaterm - 0.5*tau1*vr1);		// initial azim. velocity
     pvt1 += (vkepl - vtcorr);				// transform to corot. <---------|
     pdens1 = pebbleflux/(2.0*PI*Rmed[i]*fabs(pvrtemp));// having the drift velocity, get the density from flux conservation
+
+    if (pdens1/rho1 > PEBBLETOGASMAX) {
+      masterprint("Warning: Pebble-to-gas too large! pdens1/rho1 = %.8e > PEBBLETOGASMAX = %.8e\n", pdens1/rho1, PEBBLETOGASMAX);
+      pdens1 = rho1*PEBBLETOGASMAX;
+    }
+
     // fill HD pebble arrays with 1D profiles
     for (j=0; j<ns; j++) {
       l = j + i*ns;
@@ -144,6 +180,7 @@ PolarGrid *Rho, *Vrad;
     PebVradInit[i] = pvr1;
     PebVthetaInit[i] = pvt1 + Rmed[i]*OmegaFrame;	// transform back to intertial value
   }
+  masterprint ("Pebble statistics: %d drift-limited, %d differential-drift, %d fragmentation-limited.\n", n1, n2, n3);
   WriteDiskPolar (StokesNumber, 0);
   WriteDiskPolar (PebbleSize, 0);
   if (Merge && (CPU_Number > 1)) {
