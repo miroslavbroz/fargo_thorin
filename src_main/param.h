@@ -93,3 +93,7 @@ extern	int	HEATINGDELAY;
 extern	real	PARAMETRICACCRETION;
 extern	char	TORQUEMAPINFILE[512];
 extern	int	GETTORQUEFORPLANET;
+extern	real	PEBBLETOGASMAX;
+extern	real	FRAGMENTFACTOR;
+extern	real	FRAGMENTTHRESHOLD;
+extern	real	FRAGMENTALPHA;
