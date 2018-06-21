@@ -255,7 +255,7 @@ real dt;
   shared(nr, ns, One_or_active, MaxMO_or_active, Rmed, Rinf, \
          InvDiffRmed, InvDiffRsup, A, B, Dr, Dt, cs, dt, Ml, Mlip, \
          Mlim, Mljp, Mljm, RHS, CV, divergence, qminus, temper, qplus, ADIABIND, \
-         OmegaInv,SQRT_ADIABIND_INV,rho,StellarIrradiation,qirr,AccretHeating,heatsrc_max,heatsrc_index,heatsrc) \
+         OmegaInv,SQRT_ADIABIND_INV,rho,StellarIrradiation,qirr,AccretHeating,GasAccretHeating,heatsrc_max,heatsrc_index,heatsrc) \
   private(i, j, k, l, lip, dxtheta, invdxtheta2, ljp, H, afac, bfac)
   {
 #pragma omp for
