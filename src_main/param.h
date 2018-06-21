@@ -97,3 +97,4 @@ extern	real	PEBBLETOGASMAX;
 extern	real	FRAGMENTFACTOR;
 extern	real	FRAGMENTTHRESHOLD;
 extern	real	FRAGMENTALPHA;
+extern	char	OPACITYTABLE[512];

@@ -5,7 +5,21 @@
 # original code by Frédéric Masset
 #
 
-# Standard Linux sequential or MPI build
+# Pleaides Linux sequential or MPI build 
+CC_PLEIADES = icc
+OPT_PLEIADES = -O3 -I../src_reb/ -std=c99 -axCORE-AVX2 -xSSE4.2 -ip 
+OPTSEQ_PLEIADES =
+PARAOPT_PLEIADES = -lmpi
+PARACC_PLEIADES = icc
+
+# Pleaides Linux OpenMP 
+CC_PLEIADES_OPENMP = icc
+OPT_PLEIADES_OPENMP = -O3 -I../src_reb/ -std=c99 -axCORE-AVX2 -xSSE4.2 -ip -qopenmp
+OPTSEQ_PLEIADES_OPENMP =
+PARAOPT_PLEIADES_OPENMP = -lmpi 
+PARACC_PLEIADES_OPENMP = icc
+
+# Intel compiler build
 CC_INTEL = icc
 OPT_INTEL = -O3 -Wall -Wno-unknown-pragmas \
               -I../src_reb/ -std=c99 -Wl,-rpath,src_main/ -Wpointer-arith \
@@ -56,7 +70,7 @@ MAINOBJ         = LowTasks.o SideEuler.o Output.o Init.o main.o Theo.o\
 		  Planet.o Viscosity.o Psys.o Force.o\
 		  var.o Pframeforce.o split.o merge.o commbound.o fpe.o rebin.o\
 		  mpiTasks.o\
-                  EnergySources.o\
+                  EnergySources.o Opacity.o\
                   ReboundInterface.o\
 		  Pebbles.o\
 

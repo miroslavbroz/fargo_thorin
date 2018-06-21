@@ -195,3 +195,8 @@ void BckpFieldsForBC ();
 void ParametricAccretion ();
 /* #THORIN: tools */
 void CreateTorqueMapInfile ();
+real opacity_const ();
+real opacity_BL94 ();
+real opacity_ZHU12 ();
+real opacity_LP85 ();
+
