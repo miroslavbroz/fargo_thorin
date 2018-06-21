@@ -150,7 +150,7 @@ PlanetarySystem *sys;
       dPyPlanet = temp;
 
       if (GasAccretHeating) {
-        Heating1(Mplanet, dMplanet, Xplanet, Yplanet, dt, nr, ns, k);
+        Heating(Mplanet, dMplanet, Xplanet, Yplanet, dt, nr, ns, k);
       }
 
       PxPlanet += dPxPlanet;
@@ -244,6 +244,15 @@ int nr, ns, k;
   heatsrc_index[k] = l;
   dE = L*taper/Surf[i];  // final dimension: W/m^2 -> average power density in cells closest to the planet
   heatsrc[k] += dE;
+}
+
+/* Which heating to use, btw.? */
+
+void Heating(Mplanet, dMplanet, Xplanet, Yplanet, dt, nr, ns, k)
+real Mplanet, dMplanet, Xplanet, Yplanet, dt;
+int nr, ns, k;
+{
+  Heating1(Mplanet, dMplanet, Xplanet, Yplanet, dt, nr, ns, k);
 }
 
 

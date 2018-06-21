@@ -360,7 +360,6 @@ real dt;
   real vtcorr, xcell, ycell, vrcell, vtcell, vxcell, vycell, flow, flowx, flowy, vrel;
   real ifrac, frac, Mt, Rbondi, tbondi, fac, Reff=0.0, Reff2, Rhill;
   real R2, H, Hpeb, zmin, zmax, dM, mcell, voldenspeb, temp;
-  real ang, plradius, plrho, dE, L, tdelay, taper;
   real tau_mean, dM_upper, Hpeb_mean, pdens_mean, veloc, dM_model, limiter;
   /* ----- */
   pdens = PebbleDens->Field;
@@ -520,25 +519,7 @@ real dt;
     dPYplanet = temp;
     // OPTIONAL STEP 6 - account for the accretion heating
     if (AccretHeating) {
-      heatsrc_index[k] = -1;	   
-      if (Rplanet >= Rinf[0] && Rplanet <= Rsup[nr-1]) {
-        tdelay = 4.0*DT*(real)HEATINGDELAY;
-        taper = PhysicalTime/tdelay;
-        if (taper > 1.0) taper = 1.0;
-        plrho = PLANETARYDENSITY/RHO2CGS;
-        plradius = pow (3.0*Mplanet/(4.0*PI*plrho), 1.0/3.0);
-        L = Mplanet*dMplanet/dt/plradius; // see Benitez et al. (2015); G=1; and we work in terms of LUMINOSITY
-        ang = atan2(Yplanet,Xplanet);
-        if (ang < 0.0) ang += 2.0*PI;
-        i = 0;
-        while (Rsup[i] < Rplanet) i++;
-        j = floor((real)ns/2.0/PI*ang + 0.5);
-        if (j==ns) j=0;
-        l = j + i*ns;
-	heatsrc_index[k] = l;
-	dE = L*taper/Surf[i];	// final dimension: W/m^2 -> average power density in cells closest to the planet
-        heatsrc[k] = dE;
-      }
+      Heating(Mplanet, dMplanet, Xplanet, Yplanet, dt, nr, ns, k);
     }
     // STEP 7 - Update the planet
     PXplanet += dPXplanet;
@@ -821,9 +802,8 @@ void ParametricAccretion (sys, dt)
 PlanetarySystem *sys;
 real dt;
 {
-  int k, i, j, l, nr, ns;
-  real Mplanet, Xplanet, Yplanet, dMplanet, Rplanet, tdelay, taper;
-  real plrho, plradius, L, ang, dE;
+  int k, nr, ns;
+  real Mplanet, Xplanet, Yplanet, dMplanet;
   static real doubling=0.0;
   if (doubling == 0.0) doubling = PARAMETRICACCRETION*1000.0*2.0*PI;	// convert the doubling time from kyr to code units
   nr = SoundSpeed->Nrad;
@@ -834,27 +814,8 @@ real dt;
     Xplanet = sys->x[k];
     Yplanet = sys->y[k];
     dMplanet = Mplanet*dt/doubling;
-    Rplanet = sqrt(Xplanet*Xplanet + Yplanet*Yplanet);
     if (AccretHeating) {
-      heatsrc_index[k] = -1;
-      if (Rplanet >= Rinf[0] && Rplanet <= Rsup[nr-1]) {
-        tdelay = 4.0*DT*(real)HEATINGDELAY;
-        taper = PhysicalTime/tdelay;
-        if (taper > 1.0) taper = 1.0;
-        plrho = PLANETARYDENSITY/RHO2CGS;
-        plradius = pow (3.0*Mplanet/(4.0*PI*plrho), 1.0/3.0);
-        L = Mplanet*Mplanet/doubling/plradius;
-        ang = atan2(Yplanet,Xplanet);
-        if (ang < 0.0) ang += 2.0*PI;
-        i = 0;
-        while (Rsup[i] < Rplanet) i++;
-        j = floor((real)ns/2.0/PI*ang + 0.5);
-        if (j==ns) j=0;
-        l = j + i*ns;
-        heatsrc_index[k] = l;
-        dE = L*taper/Surf[i];   // final dimension: W/m^2 -> average power density in cells closest to the planet
-        heatsrc[k] = dE;
-      }
+      Heating(Mplanet, dMplanet, Xplanet, Yplanet, dt, nr, ns, k);
     }
     Mplanet += dMplanet;
     sys->mass[k] = Mplanet;
