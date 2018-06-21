@@ -233,6 +233,19 @@ char *filename;
   if ((*WRITEETA == 'y') || (*WRITEETA == 'Y')) Write_Eta = YES;
   if (PARAMETRICACCRETION > 0.0) PrescribedAccretion = YES;
   if (GETTORQUEFORPLANET >= 0) TorqueDensity = YES;
+  if (PARAMETRICOPACITY > 0.0) {
+    opacity_func = opacity_const;
+    masterprint ("Opacity is constant.\n");
+  } else if (*OPACITYTABLE == 'Z') {
+    opacity_func = opacity_ZHU12;
+    masterprint ("Opacity is Zhu etal. (2012).\n");
+  } else if (*OPACITYTABLE == 'L') {
+    opacity_func = opacity_LP85;
+    masterprint ("Opacity is Lin & Papaloizou (1985).\n");
+  } else {
+    opacity_func = opacity_BL94;
+    masterprint ("Opacity is Bell & Lin (1994).\n");
+  }
 }
 
 void PrintUsage (execname)

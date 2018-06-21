@@ -93,3 +93,4 @@ extern	int	HEATINGDELAY;
 extern	real	PARAMETRICACCRETION;
 extern	char	TORQUEMAPINFILE[512];
 extern	int	GETTORQUEFORPLANET;
+extern	char	OPACITYTABLE[512];

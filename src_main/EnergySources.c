@@ -19,15 +19,10 @@
 
 #include "fargo.h"
 
-#define SORMAXITERS 1000
+#define SORMAXITERS 10000
 #define SOREPS 1.0e-8
 #define SORMIN 1.0e-15
 #define SORPRECISION 1.0e-15
-
-/* Opacity table according to Bell & Lin (1994), see also Keith & Wardle (2014) */
-static real kappa0[7] = {2.0e-4, 2.0e16, 0.1, 2.0e81, 1.0e-8, 1.0e-36, 1.5e20};
-static real a[7] = {0.0, 0.0, 0.0, 1.0, 2.0/3.0, 1.0/3.0, 1.0};
-static real b[7] = {2.0, -7.0, 0.5, -24.0, 3.0, 10.0, -5.0/2.0};
 
 static PolarGrid *GradTemperRad, *GradTemperTheta, *GradTemperMagnitude;
 static PolarGrid *DiffCoefCentered, *DiffCoefIfaceRad, *DiffCoefIfaceTheta;
@@ -237,7 +232,7 @@ real dt;
   ComputeTemperatureField (Rho, EnergyInt);	/* use the intermediate energy (updated in SubStep2) to get T and cs */
   ComputeSoundSpeed (Rho, EnergyInt);
   MidplaneVolumeDensity (Rho);			/* use new cs to convert the surface density to the volume density */
-  OpacityProfile ();				/* use new temperature and vol.dens to calc. the opacity */
+  OpacityProfile (Temperature, VolumeDensity, Opacity);	/* use new temperature and vol.dens to calc. the opacity */
   CalculateQminus (Rho);			/* estimate the vertical cooling term (z-direction radiation escape) */
   if (StellarIrradiation) {			/* for stellar irradiated discs: */
     CalculateFlaring ();			/* - check which parts are exposed to the incoming radiation */
@@ -255,11 +250,12 @@ real dt;
    * After SOR, the temperature in overlapping zones will be synchronized,
    * leaving old values of T only in the inner ring of inner CPU and in the outer ring
    * of outer CPU. T is updated in these rings by adopting the neighbouring value. */
-#pragma omp parlallel default(none) \
+#pragma omp parallel default(none) \
   shared(nr, ns, One_or_active, MaxMO_or_active, Rmed, Rinf, \
          InvDiffRmed, InvDiffRsup, A, B, Dr, Dt, cs, dt, Ml, Mlip, \
-         Mlim, Mljp, Mljm, RHS, CV, divergence, qminus, temper, qplus, ADIABIND) \
-  private(i, j, l, lip, dxtheta, invdxtheta2, ljp, H, afac, bfac)
+         Mlim, Mljp, Mljm, RHS, CV, divergence, qminus, temper, qplus, ADIABIND, \
+         OmegaInv,SQRT_ADIABIND_INV,rho,StellarIrradiation,qirr,AccretHeating,heatsrc_max,heatsrc_index,heatsrc) \
+  private(i, j, k, l, lip, dxtheta, invdxtheta2, ljp, H, afac, bfac)
   {
 #pragma omp for
   for (i=1; i<nr; i++) {		// parts of matrices for SOR (no active mesh restriction so far!)
@@ -290,9 +286,8 @@ real dt;
       RHS[l]  = temper[l] + bfac*(qplus[l] + 3.0*qminus[l]*temper[l]);
       if (StellarIrradiation) RHS[l] += bfac*qirr[l];
       if (AccretHeating) {
-	for (k=0; k<heatsrc_max; k++) {
+        for (k=0; k<heatsrc_max; k++)
           if (l==heatsrc_index[k]) RHS[l] += bfac*heatsrc[k];
-	}
       }
     }
   }
@@ -490,11 +485,14 @@ boolean errcheck;
     masterprint ("Error!\n");
     masterprint ("The SOR solution of the radiative diffusion equation did not converge.\n");
     masterprint ("n = %d\n", n);
+    masterprint ("omega = %e\n", omega);
     masterprint ("normres0 = %e\n", normres0);
     masterprint ("normres = %e\n", normres);
     masterprint ("SORMAXITERS = %d\n", SORMAXITERS);
     masterprint ("SOREPS = %e\n", SOREPS);
     masterprint ("SORMIN = %e\n", SORMIN);
+    masterprint ("SORPRECISION = %e\n", SORPRECISION);
+//    masterprint ("Not terminating, but you know...\n");
     masterprint ("Terminating now...\n");
     prs_exit (1);
   }
@@ -670,70 +668,6 @@ PolarGrid *Rho;
   }
 }
 
-/** Fills the opacity polar grid, either with
- * a fixed parametric value or using the Bell & Lin (1994)
- * opacity table. */
-void OpacityProfile ()
-{
-  int nr, ns, i, j, l;
-  real kappa1, kappa2, kappa3, tmp1, tmp2;
-  real *opacity, *temper, *voldens;
-  real T, Dens;
-  static boolean FillParametricOpacity = YES;
-  /* ----- */
-  opacity = Opacity->Field;
-  temper = Temperature->Field;
-  nr = Temperature->Nrad;
-  ns = Temperature->Nsec;
-  voldens = VolumeDensity->Field;
-  if (PARAMETRICOPACITY > 0.0) {
-    if (FillParametricOpacity) {	/* if the parametric opacity is used ... */
-      FillParametricOpacity = NO;	/* fill the array only once ... */
-      for (i=0; i<nr; i++) {
-        for (j=0; j<ns; j++) {
-          l = j + i*ns;
-          opacity[l] = PARAMETRICOPACITY*OPA2CU;
-        }
-      }
-    } else {
-      return;				/* ... and exit the function in subsequent calls */
-    }
-  }
-#pragma omp parallel for default(none) shared(nr,ns,temper,voldens,opacity,kappa0,a,b) \
-  private(i,j,l,T,Dens,kappa1,kappa2,kappa3,tmp1,tmp2)
-  for (i=0; i<nr; i++) {
-    for (j=0; j<ns; j++) {
-      l = j + i*ns;
-      T = temper[l]*T2SI;		/* temperature transformed from code units to Kelvins */
-      Dens = voldens[l]*RHO2CGS;		/* transform to cgs */
-      /* transitions calculated using eq. (12) in Keith & Wardle (2014);
-       * comparisons performed in cgs */
-      if (T <= 2286.8*pow(Dens,0.0408)) {
-        kappa1 = kappa0[0] * pow(Dens,a[0]) * pow(T,b[0]);
-	kappa2 = kappa0[1] * pow(Dens,a[1]) * pow(T,b[1]);
-	kappa3 = kappa0[2] * pow(Dens,a[2]) * pow(T,b[2]);
-        tmp1 = 1.0/(kappa1*kappa1) + 1.0/(kappa2*kappa2);
-	tmp1 = 1.0/(tmp1*tmp1);
-	tmp2 = pow(kappa3/(1.0 + 1.0e22*pow(T,-10.0)), 4.0);
-	opacity[l] = pow(tmp1+tmp2, 0.25);
-      }
-      else if (T > 2286.8*pow(Dens,0.0408) && T <= 2029.8*pow(Dens,0.0123)) {
-        opacity[l] = kappa0[3] * pow(Dens,a[3]) * pow(T,b[3]);
-      }
-      else if (T > 2029.8*pow(Dens,0.0123) && T <= 1.0e5*pow(Dens,0.0476)) {
-        opacity[l] = kappa0[4] * pow(Dens,a[4]) * pow(T,b[4]);
-      }
-      else if (T > 1.0e5*pow(Dens,0.0476) && T <= (31195.2)*pow(Dens,0.0533)) {
-        opacity[l] = kappa0[5] * pow(Dens,a[5]) * pow(T,b[5]);
-      }
-      else {
-        opacity[l] = kappa0[6] * pow(Dens,a[6]) * pow(T,b[6]);
-      }
-      opacity[l] = opacity[l]*OPA2CU;
-    }
-  }
-}
-
 /** Calculates the flux limiter
  * according to Kley (1989) */
 real FluxLimiterValue (s)
@@ -840,7 +774,7 @@ PolarGrid *Surfdens;
   real *cs, *temper, *pressure, *surfdens;
   real CS[MAX1D], T[MAX1D], P[MAX1D], Sigma[MAX1D];	// need to create global azimuthally averaged fields
   real Rho, tmpr, Opacity, Viscalpha, H;
-  real Omega, kappa1, kappa2, kappa3, tmp1, tmp2;
+  real Omega;
   int i;
   char name[256];
   FILE *output;
@@ -868,28 +802,7 @@ PolarGrid *Surfdens;
       // H[i] = CS[i]/Omega/sqrt(ADIABIND);
       // Rho[i] = Sigma[i]/(2.0*H[i]);
       /* OPACITY PART IN CGS ---> */
-      if (tmpr <= 2286.8*pow(Rho,0.0408)) {
-        kappa1 = kappa0[0] * pow(Rho,a[0]) * pow(tmpr,b[0]);
-        kappa2 = kappa0[1] * pow(Rho,a[1]) * pow(tmpr,b[1]);
-        kappa3 = kappa0[2] * pow(Rho,a[2]) * pow(tmpr,b[2]);
-        tmp1 = 1.0/(kappa1*kappa1) + 1.0/(kappa2*kappa2);
-        tmp1 = 1.0/(tmp1*tmp1);
-        tmp2 = pow(kappa3/(1.0 + 1.0e22*pow(tmpr,-10.0)), 4.0);
-        Opacity = pow(tmp1+tmp2, 0.25);
-      }
-      else if (tmpr > 2286.8*pow(Rho,0.0408) && tmpr <= 2029.8*pow(Rho,0.0123)) {
-        Opacity = kappa0[3] * pow(Rho,a[3]) * pow(tmpr,b[3]);
-      }
-      else if (tmpr > 2029.8*pow(Rho,0.0123) && tmpr <= 1.0e5*pow(Rho,0.0476)) {
-        Opacity = kappa0[4] * pow(Rho,a[4]) * pow(tmpr,b[4]);
-      }
-      else if (tmpr > 1.0e5*pow(Rho,0.0476) && tmpr <= (31195.2)*pow(Rho,0.0533)) {
-        Opacity = kappa0[5] * pow(Rho,a[5]) * pow(tmpr,b[5]);
-      }
-      else {
-        Opacity = kappa0[6] * pow(Rho,a[6]) * pow(tmpr,b[6]);
-      }
-      if (PARAMETRICOPACITY > 0.0) Opacity = PARAMETRICOPACITY;
+      Opacity = opacity_func(Rho, tmpr);
       /* <--- */
       if (ViscosityAlpha) {
 	Viscalpha = ALPHAVISCOSITY;
