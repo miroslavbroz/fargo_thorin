@@ -40,7 +40,7 @@ char *filename;
 PlanetarySystem *AllocPlanetSystem (nb)	/* #THORIN: 3rd dimension added, acceleration from the disk added */
      int nb;
 {
-  real *mass, *x, *y, *z, *vx, *vy, *vz, *acc, *ax, *ay, *az;
+  real *mass, *gas, *solid, *x, *y, *z, *vx, *vy, *vz, *acc, *ax, *ay, *az;
   boolean *feeldisk, *feelothers;
   int i;
   PlanetarySystem *sys;
@@ -56,6 +56,8 @@ PlanetarySystem *AllocPlanetSystem (nb)	/* #THORIN: 3rd dimension added, acceler
   vy   = (real *)malloc (sizeof(real)*(nb+1));
   vz   = (real *)malloc (sizeof(real)*(nb+1));
   mass = (real *)malloc (sizeof(real)*(nb+1));
+  gas = (real *)malloc (sizeof(real)*(nb+1));
+  solid = (real *)malloc (sizeof(real)*(nb+1));
   acc  = (real *)malloc (sizeof(real)*(nb+1));
   if ((x == NULL) || (y == NULL) || (z == NULL) || (vx == NULL) || (vy == NULL) || (vz == NULL) || (acc == NULL) || (mass == NULL)) {
     fprintf (stderr, "Not enough memory.\n");
@@ -85,10 +87,12 @@ PlanetarySystem *AllocPlanetSystem (nb)	/* #THORIN: 3rd dimension added, acceler
   sys->az= az;
   sys->acc=acc;
   sys->mass = mass;
+  sys->gas = gas;
+  sys->solid = solid;
   sys->FeelDisk = feeldisk;
   sys->FeelOthers = feelothers;
   for (i = 0; i < nb; i++) {
-    x[i] = y[i] = z[i] = vx[i] = vy[i] = vz[i] = mass[i] = acc[i] = 0.0;
+    x[i] = y[i] = z[i] = vx[i] = vy[i] = vz[i] = mass[i] = gas[i] = solid[i] = acc[i] = 0.0;
     ax[i] = ay[i] = az[i] = 0.0;
     feeldisk[i] = feelothers[i] = YES;
   }
@@ -108,6 +112,8 @@ PlanetarySystem *sys;
   free (sys->ay);
   free (sys->az);
   free (sys->mass);
+  free (sys->gas);
+  free (sys->solid);
   free (sys->acc);
   free (sys->FeelOthers);
   free (sys->FeelDisk);
@@ -121,7 +127,7 @@ char *filename;
   char s[512], nm[512], test1[512], test2[512], *s1;
   PlanetarySystem *sys;
   int i=0, nb;
-  float mass, dist, accret;
+  float mass, gas, solid, dist, accret;
   boolean feeldis, feelothers;
   nb = FindNumberOfPlanets (filename);
   if (CPU_Master)

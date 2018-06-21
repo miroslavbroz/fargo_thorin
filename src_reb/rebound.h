@@ -109,6 +109,8 @@ struct reb_particle {
     double ay;          ///< y-acceleration of the particle. 
     double az;          ///< z-acceleration of the particle. 
     double m;           ///< Mass of the particle. 
+    double gas;         ///< Mass of gas. 
+    double solid;       ///< Mass of solids. 
     double r;           ///< Radius of the particle. 
     double lastcollision;       ///< Last time the particle had a physical collision.
     struct reb_treecell* c;     ///< Pointer to the cell the particle is currently in.

@@ -133,7 +133,7 @@ char *plfile;
   FILE *input;
   char s[512], nm[512], filename[256], *s1;
   int npl, i, err;
-  float mass, a, e, inc, Omega, omega, f;
+  float mass, gas, solid, a, e, inc, Omega, omega, f;
   real rho, radius, rad;
   /* ----- */
   struct reb_simulation *rsim = reb_create_simulation ();
@@ -158,8 +158,12 @@ char *plfile;
     if (isalpha(s[0])) {
       s1 = s + strlen(nm);
       // input as the planet mass and orbital elements. Accretion and FEELDISK options are managed by parameters. FEELOTHERS=YES is implicit.
-      sscanf(s1 + strspn(s1, "\t :=>_"), "%f %f %f %f %f %f %f", \
-        &mass, &a, &e, &inc, &Omega, &omega, &f);
+      err = sscanf(s1 + strspn(s1, "\t :=>_"), "%f %f %f %f %f %f %f %f %f", \
+        &mass, &gas, &solid, &a, &e, &inc, &Omega, &omega, &f);
+      if (err != 9) {
+        fprintf (stderr, "Error reading file '%s'.\n", plfile);
+        prs_exit(1);
+      }
       err = 0;
       struct reb_particle p = reb_tools_orbit_to_particle_err (G, primary, \
         (real)mass, (real)a, (real)e, (real)inc*rad, (real)Omega*rad, (real)omega*rad, (real)f*rad, &err);
@@ -171,8 +175,12 @@ char *plfile;
       p.hash = i;
       radius = pow(3.0*(real)mass*rdenominv, 1.0/3.0);
       p.r = radius;			// future 2DO - inflation parameter could be implemented here
+      p.gas = gas;
+      p.solid = solid;
       reb_add (rsim, p);	
       sys->mass[i-1] = p.m;		// [i-1] because FARGO has the 1st planet at i=0
+      sys->gas[i-1] = gas;
+      sys->solid[i-1] = solid;
       sys->x[i-1] = p.x;
       sys->y[i-1] = p.y;
       sys->z[i-1] = p.z;
@@ -217,6 +225,8 @@ int nrestart;
   sys->nb = rsim->N_active - 1;		// get proper 'nb' in case of e.g. previous planetary mergers
   for (i=1; i<rsim->N_active; i++) {
     sys->mass[i-1] = particles[i].m;
+    sys->gas[i-1] = particles[i].gas;
+    sys->solid[i-1] = particles[i].solid;
     sys->x[i-1] = particles[i].x;
     sys->y[i-1] = particles[i].y;
     sys->z[i-1] = particles[i].z;
@@ -242,6 +252,7 @@ int nrestart;
   }
   return rsim;
 }
+
 /** Performs an integration step of the N-body problem */
 void AdvanceSystemRebound (sys, rsim, dt)
 PlanetarySystem *sys;
@@ -259,6 +270,9 @@ real dt;
       radius = pow(3.0*mass*rdenominv, 1.0/3.0);
       particles[i].r = radius;
     }
+    particles[i].m = sys->mass[i-1];	/* masses can change due to accretion etc */
+    particles[i].gas = sys->gas[i-1];
+    particles[i].solid = sys->solid[i-1];
     particles[i].x = sys->x[i-1];
     particles[i].y = sys->y[i-1];
     particles[i].z = sys->z[i-1];
@@ -370,10 +384,11 @@ struct reb_simulation *rsim;
   Nact = rsim->N_active;
   for (i=1; i<Nact; i++) {
     orbit = reb_tools_particle_to_orbit (G, particles[i], particles[0]);
-    fprintf (plout, "%d\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\n", \
+    fprintf (plout, "%d\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\n", \
       particles[i].hash, PhysicalTime, orbit.a, orbit.e, orbit.inc, \
-      orbit.Omega, orbit.omega, orbit.f, particles[i].m*MassTaper, particles[i].r,
-      particles[i].x, particles[i].y, particles[i].z);    
+      orbit.Omega, orbit.omega, orbit.f,
+      particles[i].m*MassTaper, particles[i].gas*MassTaper, particles[i].solid*MassTaper,
+      particles[i].r, particles[i].x, particles[i].y, particles[i].z);    
   }
 }
 
