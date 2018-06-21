@@ -80,6 +80,7 @@ extern	char	RESOLVECOLLISIONS[512];
 extern	int	TARGETNPL;
 extern	real	IAS15PRECISSION;
 extern	real	IAS15MINDT;
+extern	char	DISCARDPLANETS[512];
 extern	char	WRITETORQUEFILES[512];
 extern	real	HILLCUT;
 extern	real	VERTICALDAMPING;

@@ -96,6 +96,7 @@ InitVariables()
   var("TARGETNPL", &TARGETNPL, INT, NO, "-1.0");
   var("IAS15PRECISSION", &IAS15PRECISSION, REAL, NO, "1.e-9");
   var("IAS15MINDT", &IAS15MINDT, REAL, NO, "0.0");
+  var("DISCARDPLANETS", DISCARDPLANETS, STRING, NO, "NO");
 /* #THORIN: disc-planet interaction control */
   var("WRITETORQUEFILES", WRITETORQUEFILES, STRING, NO, "YES");
   var("HILLCUT", &HILLCUT, REAL, NO, "0.8");

@@ -239,6 +239,7 @@ char *filename;
   if ((*WRITEETA == 'y') || (*WRITEETA == 'Y')) Write_Eta = YES;
   if (PARAMETRICACCRETION > 0.0) PrescribedAccretion = YES;
   if (GETTORQUEFORPLANET >= 0) TorqueDensity = YES;
+  if ((*DISCARDPLANETS == 'y') || (*DISCARDPLANETS == 'Y')) DiscardPlanets = YES;
   if (PARAMETRICOPACITY > 0.0) {
     opacity_func = opacity_const;
     masterprint ("Opacity is constant.\n");

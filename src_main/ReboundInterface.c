@@ -308,7 +308,9 @@ real dt;
   particles[0].vx = 0.0;
   particles[0].vy = 0.0;
   particles[0].vz = 0.0;
-  DiscardParticlesDist (rsim, dt);	// !has to be called after the helioc. transformation
+  if (DiscardPlanets) {
+    DiscardParticlesDist (rsim, dt);	// !has to be called after the helioc. transformation
+  }
   /* Here we do not put all planetary stuff back to 'sys', this is done later on
      (after rotations etc) in SynchronizeFargoRebound ().*/
 }
