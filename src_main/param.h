@@ -85,6 +85,7 @@ extern	real	HILLCUT;
 extern	real	VERTICALDAMPING;
 extern	char	PLANETSFEELDISK[512];
 extern	real	ACCRETIONRATE;
+extern	char	GASACCRETIONHEATING[512];
 extern	char	PEBBLEACCRETION[512];
 extern	char	BACKREACTION[512];
 extern	char	ACCRETIONALHEATING[512];

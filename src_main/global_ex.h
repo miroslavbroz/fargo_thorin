@@ -44,6 +44,7 @@ extern boolean InitFromFile, Write_Temperature, Write_Energy, Write_Divergence, 
 extern boolean Collisions, WriteTorque, WriteTorqueMapFile, MonitorNPL, FeelDisk;  				/* #THORIN */
 extern boolean Pebbles, Write_Eta, AccretHeating, BackReaction, ActualizeLuminosity, DiffusiveParticles, PrescribedAccretion; 	/* #THORIN */
 extern boolean heatsrc_index[MAXPLANETS], TorqueDensity;	/* #THORIN */
+extern boolean GasAccretHeating;
 extern boolean Merge, AdvecteLabel, FakeSequential, MonitorIntegral, debug, OnlyInit;
 extern boolean	GotoNextOutput, StoreSigma, ViscosityAlpha, RocheSmoothing;
 extern boolean CentrifugalBalance, ExcludeHill, SloppyCFL;
