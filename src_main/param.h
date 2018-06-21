@@ -106,3 +106,5 @@ extern	real	FRAGMENTALPHA;
 extern	char	OPACITYTABLE[512];
 extern	real	GASFLUX;
 extern	char	DAMPING[512];
+extern	real	EVAPORATIONTEMPERATURE;
+extern	real	EVAPORATIONRATE;
