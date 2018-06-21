@@ -27,6 +27,7 @@ real FViscosity (rad)
      real rad;
 {
   real viscosity, rmin, rmax, scale;
+  real alpha;
   int i=0;
   /* ----- */
   viscosity = VISCOSITY;
@@ -34,6 +35,11 @@ real FViscosity (rad)
     while (GlobalRmed[i] < rad) i++;	/* ! this spans the GLOBAL grid (among all MPI processes) */
 		/* #THORIN: globcsvec[] used here */
     viscosity = ALPHAVISCOSITY*globcsvec[i]*globcsvec[i]*pow(rad, 1.5);
+  }
+  if (AlphaFlock) {
+    while (GlobalRmed[i] < rad) i++;
+    alpha = (ALPHAMRI-ALPHADEAD) * (1.0 - tanh((TMRI-globtempervec[i]*T2SI)/TWIDTH))/2.0 + ALPHADEAD;  /* Flock et al. (2016), Eq. (13) */
+    viscosity = alpha*globcsvec[i]*globcsvec[i]*pow(rad, 1.5);
   }
   rmin = CAVITYRADIUS-CAVITYWIDTH*ASPECTRATIO;
   rmax = CAVITYRADIUS+CAVITYWIDTH*ASPECTRATIO;

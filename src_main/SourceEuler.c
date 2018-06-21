@@ -754,4 +754,5 @@ PolarGrid *Rho, *Energy;
       }
     }
   }
+  mpi_make1Dprofile (temperature, globtempervec);
 }
