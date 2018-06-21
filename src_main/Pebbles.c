@@ -138,6 +138,9 @@ PolarGrid *Rho, *Vrad;
     taufrag = FRAGMENTFACTOR/(3.0*FRAGMENTALPHA) * pow(FRAGMENTTHRESHOLD/cs1, 2);
     afrag = 2.0*rho1/(PI*pebbulkdens) * taufrag;
 
+    if (debug == YES)
+      printf("psize1 = %e m --  adf = %e m --   afrag = %e m\n", psize1*AU_SI, adf*AU_SI, afrag*AU_SI);
+
     if ((psize1 < adf) && (psize1 < afrag)) {
       n1++;
     } else if ((taudf > 0.0) && (adf < psize1) && (adf < afrag)) {
