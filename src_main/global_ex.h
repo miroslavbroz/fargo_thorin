@@ -39,7 +39,7 @@ extern real OmegaFrame, PhysicalTime, PhysicalTimeInitial;
 extern real heatsrc[MAXPLANETS];						/* #THORIN */
 extern int heatsrc_max;							/* #THORIN */
 extern int TimeStep;
-extern boolean EnergyEq, StoreEnergy, ParametricCooling, Damping, DampVrad, DampInit, StellarIrradiation;	/* #THORIN */
+extern boolean EnergyEq, StoreEnergy, ParametricCooling, Damping, DampVrad, DampInit, DampFlux, StellarIrradiation;	/* #THORIN */
 extern boolean InitFromFile, Write_Temperature, Write_Energy, Write_Divergence, Write_Qplus, Write_Qbalance;			/*#THORIN*/
 extern boolean Collisions, WriteTorque, WriteTorqueMapFile, MonitorNPL, FeelDisk;  				/* #THORIN */
 extern boolean Pebbles, Write_Eta, AccretHeating, BackReaction, ActualizeLuminosity, DiffusiveParticles, PrescribedAccretion; 	/* #THORIN */

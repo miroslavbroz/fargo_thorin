@@ -20,7 +20,7 @@ original code by Frédéric Masset
 #define MAXVARIABLES 500
 
 extern int      begin_i;
-extern boolean  OpenInner, Restart;	/* #THORIN Restart added */
+extern boolean  OpenInner, OpenOuter, Restart;	/* #THORIN Restart added */
 static Param    VariableSet[MAXVARIABLES];
 static int      VariableIndex = 0;
 static int	FirstStep = YES;
@@ -149,14 +149,16 @@ char *filename;
   if ((*ADVLABEL == 'y') || (*ADVLABEL == 'Y')) AdvecteLabel = YES;
   if ((*OUTERSOURCEMASS == 'y') || (*OUTERSOURCEMASS == 'Y')) OuterSourceMass = YES;
   if ((*TRANSPORT == 's') || (*TRANSPORT == 'S')) FastTransport = NO;
-  if ((*OPENINNERBOUNDARY == 'O') || (*OPENINNERBOUNDARY == 'o')) OpenInner = YES;
-  if ((*OPENINNERBOUNDARY == 'N') || (*OPENINNERBOUNDARY == 'n')) NonReflecting = YES;
+  if ((*INNERBOUNDARY == 'O') || (*INNERBOUNDARY == 'o')) OpenInner = YES;
+  if ((*INNERBOUNDARY == 'N') || (*INNERBOUNDARY == 'n')) NonReflecting = YES;
   /* #THORIN ---> */
-  if ((*OPENINNERBOUNDARY == 'D') || (*OPENINNERBOUNDARY == 'd')) {
-    Damping = YES;
-  }
+  if ((*OUTERBOUNDARY == 'O') || (*OUTERBOUNDARY == 'o')) OpenOuter = YES;
+  if ((*INNERBOUNDARY == 'D') || (*INNERBOUNDARY == 'd')) Damping = YES;
+  if ((*OUTERBOUNDARY == 'D') || (*OUTERBOUNDARY == 'd')) Damping = YES;
+  if ((*DAMPING == 'Y') || (*DAMPING == 'y')) Damping = YES;
   if ((*DAMPTOWARDS == 'Z') || (*DAMPTOWARDS == 'z')) DampVrad = YES;
   if ((*DAMPTOWARDS == 'I') || (*DAMPTOWARDS == 'i')) DampInit = YES;
+  if ((*DAMPTOWARDS == 'G') || (*DAMPTOWARDS == 'g')) DampFlux = YES;
   /* <--- */
   if ((*GRIDSPACING == 'L') || (*GRIDSPACING == 'l')) LogGrid = YES;
   if ((*DISK == 'N') || (*DISK == 'n')) IsDisk = NO;

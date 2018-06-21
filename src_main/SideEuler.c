@@ -12,7 +12,7 @@ original code by Frédéric Masset
 
 #include "fargo.h"
 
-extern boolean OpenInner, NonReflecting, OuterSourceMass;
+extern boolean OpenInner, OpenOuter, NonReflecting, OuterSourceMass;
 
 
 real GasTotalMass (array)
@@ -108,27 +108,118 @@ void InitComputeAccel ()
     }
   }
 }
-  
-void OpenBoundary (Vrad, Rho, Energy)	/* #THORIN */
+ 
+/*
+
+    |----------|-----------------------
+    | ghost    | normal zone
+    |----------|-----------------------       
+    | rho[i=0] | rho[1]  | rho[2] | ...
+    |          |         |        |
+  vr[0]      vr[1]     vr[2]    vr[3]
+
+  Notes: j = 0..ns, l = j+i*ns
+
+*/
+
+void OpenInnerBoundary (Vrad, Rho, Energy)	/* #THORIN */
 PolarGrid *Vrad, *Rho, *Energy;
 {
   int i,j,l,ns;
   real *rho, *vr, *energy;
+  real rhoinf;
   if (CPU_Rank != 0) return;
   ns = Rho->Nsec;
   rho = Rho->Field;
   vr  = Vrad->Field;
   energy = Energy->Field;
   i = 1;
+//  printf("O");  // dbg
 #pragma omp parallel for private(l)
   for (j = 0; j < ns; j++) {
     l = j+i*ns;
-    rho[l-ns] = rho[l];		/* copy first ring into ghost ring */
-    energy[l-ns] = energy[l];	/* #THORIN */
-    if ((vr[l+ns] > 0.0) || (rho[l] < SigmaMed[0]))
+
+//    rho[l-ns] = rho[l];		/* copy first ring into ghost ring */
+//    energy[l-ns] = energy[l];	/* #THORIN */
+
+/* This is non-sense, as we need a substantial decrease below the initial profile! */
+//    if ((vr[l+ns] > 0.0) || (rho[l] < SigmaMed[0]))
+//      vr[l] = 0.0; /* we just allow outflow [inwards] */
+//    else
+//      vr[l] = vr[l+ns];
+
+    /* extrapolate the ghost ring */
+    rho[l-ns] = rho[l]+(rho[l]-rho[l+ns]);
+    if (EnergyEq == YES)
+      energy[l-ns] = energy[l]+(energy[l]-energy[l+ns]);
+
+    if (vr[l+ns] > 0.0) {
       vr[l] = 0.0; /* we just allow outflow [inwards] */
-    else
+      vr[l-ns] = 0.0;
+    } else {
       vr[l] = vr[l+ns];
+      vr[l-ns] = vr[l];
+    }
+
+    // 2DO: should we rather use azimuthal averages below?!
+    if (DampFlux == YES) {
+      rhoinf = 0.5*(rho[l]+rho[l-ns]);
+      vr[l] = -GASFLUX/(2.0*PI*Rinf[i]*rhoinf);
+      rhoinf = rho[l-ns]-0.5*(rho[l]-rho[l-ns]);
+      vr[l-ns] = -GASFLUX/(2.0*PI*Rinf[i-1]*rhoinf);
+    }
+  }
+}
+
+/*
+
+  ------------------------------|---------|
+                    normal zone | ghost   |
+  ------------------------------|---------|
+  ... | rho[i=nr-2] | rho[nr-1] | rho[nr] |
+      |             |           |         |
+   vr[nr-2]      vr[nr-1]    vr[nr]    vr[nr+1]
+
+  Notes: j = 0..ns, l = j+i*ns
+
+*/
+
+void OpenOuterBoundary (Vrad, Rho, Energy)	/* #THORIN */
+PolarGrid *Vrad, *Rho, *Energy;
+{
+  int i,j,l,nr,ns;
+  real *rho, *vr, *energy;
+  real rhoinf;
+  if (CPU_Rank != CPU_Number-1) return;
+  nr = Rho->Nrad;
+  ns = Rho->Nsec;
+  rho = Rho->Field;
+  vr  = Vrad->Field;
+  energy = Energy->Field;
+  i = nr-1;
+#pragma omp parallel for private(l)
+  for (j = 0; j < ns; j++) {
+    l = j+i*ns;
+
+    /* extrapolate the ghost ring */
+    rho[l+ns] = rho[l]+(rho[l]-rho[l-ns]);
+    if (EnergyEq == YES)
+      energy[l+ns] = energy[l]+(energy[l]-energy[l-ns]);
+
+    if (vr[l] > 0.0) {
+      vr[l] = 0.0; /* we just allow inflow [inwards] */
+      vr[l+ns] = 0.0;
+    } else {
+      vr[l] = vr[l-ns];
+      vr[l+ns] = vr[l];
+    }
+
+    if (DampFlux == YES) {
+      rhoinf = 0.5*(rho[l]+rho[l+ns]);
+      vr[l+ns] = -GASFLUX/(2.0*PI*Rinf[i+1]*rhoinf);
+      rhoinf = rho[l+ns]+0.5*(rho[l+ns]-rho[l]);
+      vr[l+2*ns] = -GASFLUX/(2.0*PI*Rsup[i+1]*rhoinf);
+    }
   }
 }
 
@@ -257,8 +348,7 @@ void SetWaveKillingZones ()	/* #THORIN */
     }
     if (Rmed[i] > DRout) {
       damp = (Rmed[i] - DRout)/(RMAX - DRout);
-      WaveKiller[i] = damp*damp/tauout;
-      WaveKiller[i] = damp/tauout;
+      WaveKiller[i] = damp/tauout;  // linear; why? Error?! <-- sometimes smoother profiles
     }
   }
 }
@@ -272,6 +362,7 @@ PolarGrid *Vrad, *Vtheta, *Rho, *Energy;
 real step;
 {
   int i, j, l, ns;
+  int nr; // dbg
   real *vrad, *vtheta, *rho, *energy;
   real vrad0, vtheta0=0.0, rho0, energy0;
   real DRin, DRout, lambda;
@@ -279,13 +370,15 @@ real step;
   vrad = Vrad->Field;
   vtheta = Vtheta->Field;
   ns = Vrad->Nsec;
+  nr = Vrad->Nrad;  // dbg
   rho = Rho->Field;
   energy = Energy->Field;
+//  printf("D");  // dbg
   DRin = RMIN*DAMPINGRMINFRAC;
   DRout = RMAX*DAMPINGRMAXFRAC;
 #pragma omp parallel default(none) \
   shared(Zero_or_active,Max_or_active,Rmed,DRin,DRout,DampInit,\
-         ns,vrad,rho,energy,vtheta,WaveKiller,OmegaFrame,SigmaMed,EnergyMed,VthetaMed,step) \
+         ns,vrad,rho,energy,vtheta,WaveKiller,OmegaFrame,SigmaMed,EnergyMed,VthetaMed,step,DampFlux,GASFLUX,Rinf,SigmaInf,EnergyEq) \
   private(i,vrad0,rho0,energy0,vtheta0,lambda,j,l)
   {
 #pragma omp for
@@ -297,15 +390,23 @@ real step;
 	energy0 = EnergyMed[i];
 	vtheta0 = VthetaMed[i] - Rmed[i]*OmegaFrame;	/* from inertial to corot */
       }
+      if (DampFlux) {
+        vrad0 = -GASFLUX/(2.0*PI*Rinf[i]*SigmaInf[i]);
+        rho0 = SigmaMed[i];
+      }
       lambda = WaveKiller[i]*step;
       for (j=0; j<ns; j++) {
         l = j + i*ns;
         vrad[l] = (vrad[l] + lambda*vrad0)/(1.0 + lambda);
 	if (DampInit) {
   	  rho[l] = (rho[l] + lambda*rho0)/(1.0 + lambda);
-          energy[l] = (energy[l] + lambda*energy0)/(1.0 + lambda);
 	  vtheta[l] = (vtheta[l] + lambda*vtheta0)/(1.0 + lambda);
+          if (EnergyEq)
+            energy[l] = (energy[l] + lambda*energy0)/(1.0 + lambda);
 	}
+	if (DampFlux) {
+  	  rho[l] = (rho[l] + lambda*rho0)/(1.0 + lambda);
+        }
       }
     }
   }
@@ -386,13 +487,14 @@ PolarGrid *Vrad, *Vtheta, *Rho, *Energy;
 real dt;
 {
   /* Note: Stockholm boundary was discarded, it is now refined in DampingBoundary() */
-  if (OpenInner == YES) OpenBoundary (Vrad, Rho, Energy);	/* #THORIN */
+  if (OpenInner == YES) OpenInnerBoundary (Vrad, Rho, Energy);	/* #THORIN */
+  if (OpenOuter == YES) OpenOuterBoundary (Vrad, Rho, Energy);	/* #THORIN */
   if (NonReflecting == YES) {
     if (EnergyEq) ComputeSoundSpeed (Rho, Energy);	/* #THORIN */
     NonReflectingBoundary (Vrad, Rho, Energy);		/* #THORIN */	
   }
-  if (Damping) DampingBoundary (Vrad, Vtheta, Rho, Energy, dt);	/* #THORIN */
   if (OuterSourceMass == YES) ApplyOuterSourceMass (Rho, Vrad);
+  if (Damping == YES) DampingBoundary (Vrad, Vtheta, Rho, Energy, dt);	/* #THORIN */
 }
 
 void CorrectVtheta (vtheta, domega)
