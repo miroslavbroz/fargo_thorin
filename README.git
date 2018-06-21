@@ -1,0 +1,68 @@
+
+zakladni pouziti gitu:
+
+cd fargo_thorin
+git init
+git add .
+git add soubor
+git commit
+git commit .
+
+git rm .2DO.swp
+git rm *.pyc
+vi .gitignore
+
+git checkout
+git checkout master
+git checkout -b novavetev
+
+git tag -l
+git tag v0.0
+
+git log
+git status
+git show
+git diff
+git branch
+git ls-tree master -r
+
+gitk --all
+
+zrcadleni na sirrahu:
+
+  ssh sirrah
+  mkdir fargo_thorin
+  git init --bare .git
+
+na lokale:
+
+  git remote add sirrah ssh://sirrah.troja.mff.cuni.cz/~/fargo_thorin/.git/
+  git push sirrah master
+
+na sirrahu:
+
+  vi .git/config
+        bare = false
+  git checkout master <- po push, samozrejme; POZOR, pak nelze provest push! =>
+  git checkout -b dummy
+  git checkout dummy
+
+git branch exposure
+git checkout exposure
+git checkout -b exposure <- a combination of the two
+vi FILE
+git add FILE
+git commit
+git commit -a <- add ALL tracked files
+git checkout master
+git merge exposure
+
+poslani na github:
+
+  git config --global user.name "miroslavbroz"
+  git config --global user.email "miroslav.broz@email.cz"
+  git remote add origin https://github.com/miroslavbroz/fargo_thorin.git
+
+  git push origin master
+
+
