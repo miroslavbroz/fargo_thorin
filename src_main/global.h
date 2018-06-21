@@ -42,3 +42,4 @@ boolean LogGrid;
 boolean OverridesOutputdir;
 char NewOutputdir[1024];
 FILE *plout, *discard, *mergers;  /* #THORIN */
+real dt_stellar=1.0e38;

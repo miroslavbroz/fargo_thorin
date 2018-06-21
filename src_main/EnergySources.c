@@ -244,6 +244,7 @@ real dt;
     CalculateQirr (Rho);			/* - calculate the heating contribution */
   }
   DiffusionCoefs ();				/* calculate the diffusion coefficients */
+  DiffusionTimestep ();
   /* To update a centered temperature value using SOR, we need the value
    * to be surrounded by 4 average diffusion coefs (one per each interface)
    * and the temperature field in adjacent cells must be known.
@@ -903,5 +904,30 @@ PolarGrid *Surfdens;
     fclose (output);
     masterprint(" done\n");
   }
+}
+
+/** Calculation of the diffusion timestep */
+void DiffusionTimestep ()
+{
+  int nr, ns, i, j, l;
+  real *D;
+  real deltar, dttmp, dtmin;
+  /* ----- */
+  nr = DiffCoefCentered->Nrad;
+  ns = DiffCoefCentered->Nsec;
+  D = DiffCoefCentered->Field;
+  dtmin = 1.0e38;
+#pragma omp parallel for default(none) shared(nr,ns,D,Rsup,Rinf) private(i,j,l,dttmp,dtmin,deltar)
+  for (i=1; i<nr-1; i++) {
+    deltar = Rsup[i]-Rinf[i];
+    for (j=0; j<ns; j++) {
+      l = j + i*ns;
+      dttmp = pow(deltar,2.0)/(D[l]*2.0);;
+      if (dttmp < dtmin){
+        dtmin = dttmp;
+      }
+    }
+  }
+  MPI_Allreduce (&dtmin, &dt_stellar, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
 }
 

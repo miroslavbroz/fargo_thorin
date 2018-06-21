@@ -93,3 +93,6 @@ extern	int	HEATINGDELAY;
 extern	real	PARAMETRICACCRETION;
 extern	char	TORQUEMAPINFILE[512];
 extern	int	GETTORQUEFORPLANET;
+extern	real	FIRSTSTEP;
+extern	real	MINIMUMSTEP;
+extern	real	MAXIMUMSTEP;

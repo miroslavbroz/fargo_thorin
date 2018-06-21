@@ -60,3 +60,4 @@ extern boolean LogGrid;
 extern boolean OverridesOutputdir;
 extern char NewOutputdir[1024];
 extern FILE *plout, *discard, *mergers;  /* #THORIN */
+extern real dt_stellar;
