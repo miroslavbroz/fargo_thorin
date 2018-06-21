@@ -408,7 +408,7 @@ real dt;
    * rotation at the boundaries but only if the Damping condition is not used */
   UpdateDivVelocAndStressTensor (VradInt, VthetaInt, Rho);
   UpdateVelocityWithViscousTerms (VradInt, VthetaInt, Rho, dt);
-  if (!Damping) ImposeKeplerianEdges (VthetaInt);
+  if ((Damping == NO) || ((Damping == YES) && (DampInit == NO))) ImposeKeplerianEdges (VthetaInt);
 }
 
 void SubStep2 (Rho, Energy, dt)	/* #THORIN */
