@@ -96,6 +96,8 @@ typedef struct timeprocess TimeProcess;
 struct planetary_system {
   int nb;			/**< Number of planets */
   real *mass;			/**< Masses of the planets */
+  real *gas;			/**< Masses of gaseous envelopes */
+  real *solid;			/**< Masses of solid cores */
   real *x;			/**< x-coordinate of the planets */
   real *y;			/**< y-coordinate of the planets */
   real *z;			/**< z-coordinate of the planets */
@@ -113,3 +115,4 @@ struct planetary_system {
 };
 
 typedef struct planetary_system PlanetarySystem;
+
