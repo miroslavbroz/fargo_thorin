@@ -180,6 +180,10 @@ char *filename;
     ViscosityAlpha = YES;
     masterprint ("Viscosity is of alpha type\n");
   }
+  if ((*ALPHAFLOCK == 'Y') || (*ALPHAFLOCK == 'y')) {
+    AlphaFlock = YES;
+    masterprint ("Viscosity is Flock et al. (2016), Eq. (13).\n");
+  }
   if ((THICKNESSSMOOTHING != 0.0) && (ROCHESMOOTHING != 0.0)) {
     mastererr ("You cannot use at the same time\n");
     mastererr ("`ThicknessSmoothing' and `RocheSmoothing'.\n");

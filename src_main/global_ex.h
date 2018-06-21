@@ -31,7 +31,7 @@ extern real InvRmed[MAX1D], InvSurf[MAX1D], InvDiffRmed[MAX1D];
 extern real InvDiffRsup[MAX1D], InvRinf[MAX1D], Radii[MAX1D], GlobalRmed[MAX1D];
 extern real SigmaMed[MAX1D], SigmaInf[MAX1D], MassTaper;
 extern real OmegaInv[MAX1D], Rmed2[MAX1D];					/* #THORIN */
-extern real EnergyMed[MAX1D], globpressvec[MAX1D], globcsvec[MAX1D], WaveKiller[MAX1D], VthetaMed[MAX1D];	/* #THORIN */
+extern real EnergyMed[MAX1D], globpressvec[MAX1D], globcsvec[MAX1D], globtempervec[MAX1D], WaveKiller[MAX1D], VthetaMed[MAX1D];	/* #THORIN */
 extern real QplusMed[MAX1D], CoolingTimeMed[MAX1D];				/* #THORIN */
 extern real PebDensInit[MAX1D], PebVradInit[MAX1D], PebVthetaInit[MAX1D];	/* #THORIN */
 extern real vt1D[MAX1D], invdtpeb_sq, invdtreb_sq, SQRT_ADIABIND_INV;		/* #THORIN */
@@ -61,3 +61,4 @@ extern boolean OverridesOutputdir;
 extern char NewOutputdir[1024];
 extern FILE *plout, *discard, *mergers;  /* #THORIN */
 extern real (*opacity_func)(real, real);
+extern boolean AlphaFlock;
