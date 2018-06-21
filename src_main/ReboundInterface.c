@@ -392,7 +392,7 @@ struct reb_simulation *rsim;
       orbit.Omega, orbit.omega, orbit.f,
       particles[i].m*MassTaper, particles[i].gas*MassTaper, particles[i].solid*MassTaper,
       particles[i].r, particles[i].x, particles[i].y, particles[i].z);    
-    ffflush (plout);
+    fflush (plout);
   }
 }
 
