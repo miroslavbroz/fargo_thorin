@@ -7,8 +7,8 @@
 # a shared library.
 
 export OPENGL=
-export CC=gcc
-export OPT=
+export CC=icc
+export OPT=-msse2 -axSSE4.1,AVX -std=c99 -Wpointer-arith -D_GNU_SOURCE -O3
 
 # see the file below for options!
 include ../src_reb/Makefile.defs

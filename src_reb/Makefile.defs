@@ -1,5 +1,4 @@
-#OPT+= -std=c99 -Wpointer-arith -Wno-unused-result -D_GNU_SOURCE -O3 -march=native
-OPT+= -msse2 -axSSE4.1,AVX -std=c99 -Wpointer-arith -D_GNU_SOURCE -O3
+OPT+= -std=c99 -Wpointer-arith -Wno-unused-result -D_GNU_SOURCE -O3 -march=native
 
 ifndef OS
 	OS=$(shell uname)

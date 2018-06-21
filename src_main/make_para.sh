@@ -23,7 +23,7 @@
 module add intelcdk-17.1
 module add openmpi-2.0.1-intel
 
-make -f makefile.reb
+make -f makefile.reb.meta
 export FARGO_ARCH=INTEL
 make BUILD=parallel
 
