@@ -19,7 +19,7 @@
 
 #include "fargo.h"
 
-#define SORMAXITERS 1000
+#define SORMAXITERS 10000
 #define SOREPS 1.0e-6
 #define SORMIN 1.0e-15
 #define SORPRECISION 1.0e-15
@@ -828,23 +828,25 @@ void DiffusionTimestep ()
 {
   int nr, ns, i, j, l;
   real *D;
-  real deltar, dttmp, dtmin;
+  real deltar2, dttmp, dtmin;
   /* ----- */
   nr = DiffCoefCentered->Nrad;
   ns = DiffCoefCentered->Nsec;
   D = DiffCoefCentered->Field;
   dtmin = 1.0e38;
-#pragma omp parallel for default(none) shared(nr,ns,D,Rsup,Rinf) private(i,j,l,dttmp,dtmin,deltar)
-  for (i=1; i<nr-1; i++) {
-    deltar = Rsup[i]-Rinf[i];
+#pragma omp parallel for default(none) shared(nr,ns,D,Rsup,Rinf,Zero_or_active,Max_or_active) private(i,j,l,dttmp,deltar2) reduction(min: dtmin)
+  for (i=Zero_or_active; i<Max_or_active; i++) {
+    deltar2 = Rsup[i]-Rinf[i];
+    deltar2 = deltar2*deltar2/2.0;
     for (j=0; j<ns; j++) {
       l = j + i*ns;
-      dttmp = pow(deltar,2.0)/(D[l]*2.0);;
+      dttmp = deltar2/D[l];
       if (dttmp < dtmin){
         dtmin = dttmp;
       }
     }
   }
-  MPI_Allreduce (&dtmin, &dt_stellar, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD);
+  MPI_Allreduce (&dtmin, &dt_stellar, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD);
 }
+
 
