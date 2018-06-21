@@ -27,6 +27,8 @@
 extern real OmegaFrame;
 extern boolean Corotating;
 
+static real rdenominv;
+
 /** If the REBOUND collision search is successful,
  * this function merges the bodies, outputs information
  * about the merger event and reorganises the particle list. */
@@ -149,6 +151,7 @@ char *plfile;
     prs_exit (1);
   }
   rho = PLANETARYDENSITY/RHO2CGS;
+  rdenominv = 1.0/(4.0*PI*rho);
   i = 1;				// REBOUND has the primary at i=0
   while (fgets(s, 510, input) != NULL) {
     sscanf(s, "%s ", nm);
@@ -166,7 +169,7 @@ char *plfile;
 	prs_exit (1);
       }
       p.hash = i;
-      radius = pow(3.0*(real)mass/4.0/PI/rho , 1.0/3.0);
+      radius = pow(3.0*(real)mass*rdenominv, 1.0/3.0);
       p.r = radius;			// future 2DO - inflation parameter could be implemented here
       reb_add (rsim, p);	
       sys->mass[i-1] = p.m;		// [i-1] because FARGO has the 1st planet at i=0
@@ -193,6 +196,52 @@ char *plfile;
   return rsim;
 }
 
+/** Part of the restart process. */
+struct reb_simulation *RestartReboundSimulation (sys, nrestart)
+PlanetarySystem *sys;
+int nrestart;
+{
+  int i;
+  char filename[256];
+  struct reb_particle *particles;
+  real rho;
+  /* ----- */
+  if (CPU_Master) printf ("\n\033[1mRestarting N-body part...\033[0m\n");
+  fflush (stdout);
+  sprintf (filename, "%snbody.simulation%d.dat", OUTPUTDIR, nrestart);
+  struct reb_simulation *rsim = reb_create_simulation_from_binary(filename);
+  SetupIntegratorParams (rsim);
+  if (CPU_Master) printf ("\033[1mNo problem!\033[0m Function pointers have been reset via the SetupIntegratorParams() function.\n");
+  particles = rsim->particles;
+  PhysicalTime = rsim->t;
+  sys->nb = rsim->N_active - 1;		// get proper 'nb' in case of e.g. previous planetary mergers
+  for (i=1; i<rsim->N_active; i++) {
+    sys->mass[i-1] = particles[i].m;
+    sys->x[i-1] = particles[i].x;
+    sys->y[i-1] = particles[i].y;
+    sys->z[i-1] = particles[i].z;
+    sys->vx[i-1] = particles[i].vx;
+    sys->vy[i-1] = particles[i].vy;
+    sys->vz[i-1] = particles[i].vz;
+    sys->acc[i-1] = ACCRETIONRATE;
+    sys->FeelDisk[i-1] = FeelDisk;
+  }
+  rho = PLANETARYDENSITY/RHO2CGS;
+  rdenominv = 1.0/(4.0*PI*rho);
+  sprintf (filename, "%snbody.orbits.dat", OUTPUTDIR);
+  plout = fopenp (filename, "a");     // "a" won't empty the file if it exists
+  sprintf (filename, "%snbody.discard.dat", OUTPUTDIR);
+  discard = fopenp (filename, "a");
+  if (Collisions == YES) {
+    sprintf (filename, "%snbody.mergers.dat", OUTPUTDIR);
+    mergers = fopenp (filename, "a");
+  }
+  if (CPU_Master) {
+    printf ("%d active planets at restart.\n", rsim->N_active - 1);
+    printf ("\n\033[1m...done\n\n\033[0m");
+  }
+  return rsim;
+}
 /** Performs an integration step of the N-body problem */
 void AdvanceSystemRebound (sys, rsim, dt)
 PlanetarySystem *sys;
@@ -200,11 +249,16 @@ struct reb_simulation *rsim;
 real dt;
 {
   int i;
-  real ttarget;
+  real ttarget, mass, radius;
   struct reb_particle com;
   struct reb_particle* const particles = rsim->particles;	/* asterisk means that the pointer is not to be changed, unlike the stuff it points to */
   for (i=1;i<rsim->N_active;i++) {	/* only planets have to be synchronised */
-    particles[i].m = sys->mass[i-1];	/* masses can change due to accretion etc */
+    mass = sys->mass[i-1];              /* masses can change due to accretion etc */
+    if (mass != particles[i].m) {       /* if masses change, radii must be updated */
+      particles[i].m = mass;
+      radius = pow(3.0*mass*rdenominv, 1.0/3.0);
+      particles[i].r = radius;
+    }
     particles[i].x = sys->x[i-1];
     particles[i].y = sys->y[i-1];
     particles[i].z = sys->z[i-1];
@@ -339,46 +393,3 @@ struct reb_simulation *rsim;
   fflush (stdout);
 }
 
-/** Part of the restart process. */
-struct reb_simulation *RestartReboundSimulation (sys, nrestart)
-PlanetarySystem *sys;
-int nrestart;
-{
-  int i;
-  char filename[256];
-  struct reb_particle *particles;
-  /* ----- */
-  if (CPU_Master) printf ("\n\033[1mRestarting N-body part...\033[0m\n");
-  fflush (stdout);
-  sprintf (filename, "%snbody.simulation%d.dat", OUTPUTDIR, nrestart);
-  struct reb_simulation *rsim = reb_create_simulation_from_binary(filename);
-  SetupIntegratorParams (rsim);
-  if (CPU_Master) printf ("\033[1mNo problem!\033[0m Function pointers have been reset via the SetupIntegratorParams() function.\n");
-  particles = rsim->particles;
-  PhysicalTime = rsim->t;
-  sys->nb = rsim->N_active - 1;		// get proper 'nb' in case of e.g. previous planetary mergers
-  for (i=1; i<rsim->N_active; i++) {
-    sys->mass[i-1] = particles[i].m;
-    sys->x[i-1] = particles[i].x;
-    sys->y[i-1] = particles[i].y;
-    sys->z[i-1] = particles[i].z;
-    sys->vx[i-1] = particles[i].vx;
-    sys->vy[i-1] = particles[i].vy;
-    sys->vz[i-1] = particles[i].vz;
-    sys->acc[i-1] = ACCRETIONRATE;
-    sys->FeelDisk[i-1] = FeelDisk;
-  }
-  sprintf (filename, "%snbody.orbits.dat", OUTPUTDIR);
-  plout = fopenp (filename, "a");     // "a" won't empty the file if it exists
-  sprintf (filename, "%snbody.discard.dat", OUTPUTDIR);
-  discard = fopenp (filename, "a");
-  if (Collisions == YES) {
-    sprintf (filename, "%snbody.mergers.dat", OUTPUTDIR);
-    mergers = fopenp (filename, "a");
-  }
-  if (CPU_Master) {
-    printf ("%d active planets at restart.\n", rsim->N_active - 1);
-    printf ("\n\033[1m...done\n\n\033[0m");
-  }
-  return rsim;
-}
