@@ -819,3 +819,38 @@ real dt;
     sys->mass[k] = Mplanet;
   }
 }
+
+/* Pebble evaporation, assuming thermal equlibrium with gas */
+
+#define EVAPOREDSIGMA 1.0e-8
+
+void EvaporatePebbles (dt)
+real dt;
+{
+  int i,j,l,ns;
+  real facc, evaptemp;
+  real *dens, *temp;
+
+  if (EVAPORATIONRATE <= 0.0) return;
+  ns = PebbleDens->Nsec;
+  dens = PebbleDens->Field;
+  temp = Temperature->Field;
+
+  facc = EVAPORATIONRATE*dt;
+  if (facc > 1.0) {
+    printf("Warning: Pebble evaporation too fast! facc = %.8e\n", facc);
+    facc = 1.0;
+  }
+  evaptemp = EVAPORATIONTEMPERATURE/T2SI;
+
+  for (i=One_or_active; i<Max_or_active; i++) {
+    for (j=0; j<ns; j++) {
+      l = j+i*ns;
+      if (temp[l] > evaptemp) {
+        dens[l] *= (1.0-facc);
+        if (dens[l] < EVAPOREDSIGMA) dens[l] = EVAPOREDSIGMA;
+      }
+    }
+  }
+}
+

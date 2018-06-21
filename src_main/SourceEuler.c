@@ -238,6 +238,7 @@ struct reb_simulation *rsim;
       AccreteOntoPlanets (Rho, Vrad, Vtheta, dt, sys);
       if (PrescribedAccretion) ParametricAccretion (sys, dt);
       if (Pebbles) AccretePebblesOntoPlanets (sys, Rho, Energy, Vtheta, dt);	/* #THORIN */
+      if (Pebbles) EvaporatePebbles (dt);
     }
     dtemp += dt;
     if (Corotating == YES) GetPsysInfo (sys, MARK);
