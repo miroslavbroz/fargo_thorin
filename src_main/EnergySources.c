@@ -19,8 +19,8 @@
 
 #include "fargo.h"
 
-#define SORMAXITERS 10000
-#define SOREPS 1.0e-8
+#define SORMAXITERS 1000
+#define SOREPS 1.0e-6
 #define SORMIN 1.0e-15
 #define SORPRECISION 1.0e-15
 
@@ -354,7 +354,11 @@ void IterateRelaxationParameter ()	// note: no explicit MPI stuff here -> everyt
   omegabest = 1.0;				// Gauss-Seidel value as the first guess for relax. parameter
   while (YES) {					// infinite loop (till return is called)
     for (n=0; n<=nsplit; n++) {
+      if (debug == YES)
+        masterprint ("SOR: omega = %e -- ", omega);
       Niter = SuccessiveOverrelaxation (omega, NO);	// NO means that the program won't crash when exceeding SORMAXITERS, it will instead try the next omega
+      if (debug == YES)
+        masterprint ("Niter = %d\n", Niter);
       if (Niter == Niterbest) count++;	// count the number of omegas in the sub-interval that reach the best convergence
       if (Niter < Niterbest) {
         Niterbest = Niter;		// keep track of the lowest number of iterations
