@@ -1,0 +1,7 @@
+*.o
+*.c_diff
+*.c_ORIG
+thorin
+librebound.so
+.source.tar.bz2
+
