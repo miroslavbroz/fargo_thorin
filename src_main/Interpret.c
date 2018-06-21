@@ -232,6 +232,7 @@ char *filename;
   } else {
     FeelDisk = NO;
   }
+  if ((*GASACCRETIONHEATING == 'y') || (*GASACCRETIONHEATING == 'Y')) GasAccretHeating = YES;
   if ((*PEBBLEACCRETION == 'y') || (*PEBBLEACCRETION == 'Y')) Pebbles = YES;
   if ((*BACKREACTION == 'y') || (*BACKREACTION == 'Y')) BackReaction = YES;
   if ((*PARTICLEDIFFUSION == 'y') || (*PARTICLEDIFFUSION = 'Y')) DiffusiveParticles = YES;

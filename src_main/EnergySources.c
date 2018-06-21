@@ -286,7 +286,7 @@ real dt;
       Mljm[l] = - bfac*B[l];
       RHS[l]  = temper[l] + bfac*(qplus[l] + 3.0*qminus[l]*temper[l]);
       if (StellarIrradiation) RHS[l] += bfac*qirr[l];
-      if (AccretHeating) {
+      if (AccretHeating || GasAccretHeating) {
         for (k=0; k<heatsrc_max; k++)
           if (l==heatsrc_index[k]) RHS[l] += bfac*heatsrc[k];
       }
