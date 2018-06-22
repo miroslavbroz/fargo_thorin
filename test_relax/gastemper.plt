@@ -8,6 +8,7 @@ R_SI = R_STANDARD/(MMW*0.001)
 T2SI = GM_SI/R_SI/AU_SI
 
 T_MRI = 1000
+T_evaporation = 1500
 
 set term png small
 set out "gastemper.png"
@@ -19,8 +20,10 @@ load "config.plt"
 f(i) = Rmin+(Rmax-Rmin)*i/Nsec/Nr
 
 #set yr [0:0.006]
-#set yr [0:0.0006]
+
+tmp=0.44; set arrow from tmp,graph 0 to tmp,graph 1 nohead lt 0
 
 p "gastemper.cfg" u (f($0)):1 w l lt 2 lw 3,\
-  T_MRI/T2SI w l lt 0
+  T_MRI/T2SI w l lt 0,\
+  T_evaporation/T2SI w l lt 0
 
