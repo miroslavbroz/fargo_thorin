@@ -49,7 +49,7 @@ BUILDNOTE_THORIN_OPENMP = multithread
 # Standard Linux sequential w. profiling and debugging
 CC_PROFILE = gcc
 OPT_PROFILE = -O3 -march=native -Wall -Wno-unknown-pragmas -Wno-unused-result\
-              -I../src_reb/ -std=c99 -Wl,-rpath,src_main/ -Wpointer-arith -pg -g -static
+              -I../src_reb/ -std=c99 -Wl,-rpath,src_main/ -Wpointer-arith -pg -g
 OPTSEQ_PROFILE =
 PARAOPT_PROFILE =
 PARACC_PROFILE = mpicc
