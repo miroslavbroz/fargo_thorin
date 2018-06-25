@@ -65,7 +65,7 @@ RadialSpacing           Arithmetic      Zone interfaces evenly spaced
 
 ### Output control parameters
 
-Ntot                    12000
+Ntot                    100
 Ninterm                 100
 DT                      3.725
 OutputDir               out_relax

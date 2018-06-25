@@ -73,8 +73,8 @@ RadialSpacing           Arithmetic      Zone interfaces evenly spaced
 
 ### Output control parameters
 
-Ntot                    80000		t = 80 000 * 3.725 / 2pi ~= 47 kyr
-Ninterm                 100		Ntot/Ninterm outputs
+Ntot                    1		t = 80 000 * 3.725 / 2pi ~= 47 kyr
+Ninterm                 1		Ntot/Ninterm outputs
 DT                      3.725		1/20 of orbital period at 5.2au
 FirstStep		-1.0		First time step (very small in order NOT to overshoot temperature; set negative to ignore).
 MinimumStep		1.0e-2		Minumum time step used only if dt_stellar (i.e. diffusion) is too restrictive.

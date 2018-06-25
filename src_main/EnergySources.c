@@ -19,7 +19,7 @@
 
 #include "fargo.h"
 
-#define SORMAXITERS 10000
+#define SORMAXITERS 1000
 #define SOREPS 1.0e-6
 #define SORMIN 1.0e-15
 #define SORPRECISION 1.0e-15

@@ -46,6 +46,14 @@ PARAOPT_THORIN_OPENMP =
 PARACC_THORIN_OPENMP = mpicc
 BUILDNOTE_THORIN_OPENMP = multithread
 
+# Standard Linux sequential w. profiling and debugging
+CC_PROFILE = gcc
+OPT_PROFILE = -O3 -march=native -Wall -Wno-unknown-pragmas -Wno-unused-result\
+              -I../src_reb/ -std=c99 -Wl,-rpath,src_main/ -Wpointer-arith -pg -g -static
+OPTSEQ_PROFILE =
+PARAOPT_PROFILE =
+PARACC_PROFILE = mpicc
+
 # Generic options valid for any platfom
 # which has 'cc' in the path
 # These are used if you leave FARGO_ARCH undefined
