@@ -19,10 +19,12 @@
 
 #include "fargo.h"
 
-#define SORMAXITERS 1000
+#define SORMAXITERS 100000
 #define SOREPS 1.0e-6
 #define SORMIN 1.0e-15
 #define SORPRECISION 1.0e-15
+
+#define OMEGAUPPER 1.9
 
 static PolarGrid *GradTemperRad, *GradTemperTheta, *GradTemperMagnitude;
 static PolarGrid *DiffCoefCentered, *DiffCoefIfaceRad, *DiffCoefIfaceTheta;
@@ -300,8 +302,8 @@ real dt;
     Niterlast = Niterbest;
   }
   omega += domega;		// always try to change the relax. parameter a little (domega set in IterateRelaxationParameter())
-  if (omega > 1.999999) {	// stay in the [1,2) interval
-    omega = 1.999999;
+  if (omega > OMEGAUPPER) {	// stay in the [1,2) interval
+    omega = OMEGAUPPER;
     domega = -domega;
   }
   if (omega < 1.0) {
@@ -335,7 +337,9 @@ real dt;
  * parameter in order to find its best value to start with. */
 void IterateRelaxationParameter ()	// note: no explicit MPI stuff here -> everything is synchronized in the reduction routines of SOR
 {
-  real omegamin=1.0, omegamax=1.999999, omega=1.0;	// parameter from interval [1,2)
+  real omegamin=1.0, omega=1.0;	// parameter from interval [1,2)
+//  real omegamax=1.999999;
+  real omegamax=OMEGAUPPER;
   int nr, ns, n, i, j, l, nsplit=9, Niter = SORMAXITERS, count=0;
   real *temper, *tempbckp;
   /* ----- */
@@ -390,7 +394,7 @@ void IterateRelaxationParameter ()	// note: no explicit MPI stuff here -> everyt
     omegamin = omegabest - domega;	// repeat the test on a sub-interval of the previous range
     omegamax = omegabest + domega;
     if (omegamin < 1.0) omegamin = 1.0;
-    if (omegamax > 1.999999) omegamax = 1.999999;
+    if (omegamax > OMEGAUPPER) omegamax = OMEGAUPPER;
     domega = (omegamax - omegamin)/nsplit;
     omega = omegamin;
   }
@@ -497,9 +501,9 @@ boolean errcheck;
     masterprint ("SOREPS = %e\n", SOREPS);
     masterprint ("SORMIN = %e\n", SORMIN);
     masterprint ("SORPRECISION = %e\n", SORPRECISION);
-//    masterprint ("Not terminating, but you know...\n");
-    masterprint ("Terminating now...\n");
-    prs_exit (1);
+    masterprint ("Not terminating, but you know...\n");
+//    masterprint ("Terminating now...\n");
+//    prs_exit (1);
   }
   return n;
 }
