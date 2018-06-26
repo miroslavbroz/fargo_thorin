@@ -693,6 +693,8 @@ real deltaT;
     printf ("   and from theta with limit   : %g\n", visct);
     printf ("Physical viscosity limit       : %g\n", itdbg5);
     printf ("Limit time step for this cell  : %g\n", mdtdbg);
+    printf ("Pebbles limit                  : %g\n", 1.0/sqrt(invdtpeb_sq));
+    printf ("Rebound limit                  : %g\n", 1.0/sqrt(invdtreb_sq));
     printf ("Stellar/Energy diffusion limit : %g\n", dt_stellar);
     printf ("Limit time step adopted        : %g\n", newdt);
     if (newdt < mdtdbg) {

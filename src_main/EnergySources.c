@@ -311,6 +311,8 @@ real dt;
     domega = -domega;
   }
   Niter = SuccessiveOverrelaxation (omega, YES);	// solve the implicit eq. with SOR; YES means that the program will crash when exceeding SORMAXITERS
+  if (debug == YES)
+    printf("SOR: Niter = %d\n", Niter);
   if (Niter > Niterlast) domega = - domega;		// if the performance is worse than in the previous case, apply the opposite change next time
   Niterlast = Niter;					// (in this way, omega oscillates around the optimum value)
   if (CPU_Number > 1) SynchronizeOverlapFields (temper, nr, CPUOVERLAP);      /* fill the overlapping ghost zones with values from the neighbouring CPU's active mesh */

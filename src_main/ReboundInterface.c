@@ -41,10 +41,6 @@ struct reb_collision coll;
   pi = coll.p1;		/* array indices of particles participating in the collision have no strict order! both i<j and j<i are possible */
   pj = coll.p2;
   if (CPU_Master) {
-    if (rsim->N_active < 1) {
-      printf("\n No planets remaining! Exiting...");
-      prs_exit(1);
-    }
     printf ("\n Merger detected. Merging planets %d and %d\n", particles[pi].hash, particles[pj].hash);
     masterprint ("Previous no. of planets: %d\n", rsim->N_active-1);
     fprintf (mergers, "%.12g\t%d\t%d\n", rsim->t, pi, pj);
@@ -71,6 +67,10 @@ struct reb_collision coll;
     fprintf (mergers, "%#.18g\t%#.18g\t%#.18g\n", particles[pk].vx, particles[pk].vy, particles[pk].vz);
     fflush (mergers);
     masterprint ("No. of planets after the merger: %d\n", rsim->N_active-1);
+    if (rsim->N_active < 2) {
+      printf("No planets remaining! Exiting...\n");
+      prs_exit(1);
+    }
   }
   return value;
 }
