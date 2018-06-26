@@ -246,6 +246,17 @@ int nr, ns, k;
   heatsrc[k] += dE;
 }
 
+/* Set heat sources to zero (each time step). */
+
+void InitHeating(sys)
+PlanetarySystem *sys;
+{
+  for (int k=0; k < sys->nb; k++) {
+    heatsrc[k] = 0.0;
+    heatsrc_index[k] = -1;
+  }
+}
+
 /* Which heating to use, btw.? */
 
 void Heating(Mplanet, dMplanet, Xplanet, Yplanet, dt, nr, ns, k)

@@ -246,6 +246,7 @@ struct reb_simulation *rsim;
 	MPI_Allreduce (&gastimestepcfl, &GasTimeStepsCFL, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD);
 	dt = (DT-dtemp)/(real)GasTimeStepsCFL;
       }
+      InitHeating(sys);
       AccreteOntoPlanets (Rho, Vrad, Vtheta, dt, sys);
       if (PrescribedAccretion) ParametricAccretion (sys, dt);
       if (Pebbles) AccretePebblesOntoPlanets (sys, Rho, Energy, Vtheta, dt);	/* #THORIN */
