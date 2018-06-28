@@ -832,11 +832,12 @@ real dt;
 void EvaporatePebbles (dt)
 real dt;
 {
-  int i,j,l,ns;
+  int i,j,l,nr,ns;
   real facc, evaptemp;
   real *dens, *temp;
 
   if (EVAPORATIONRATE <= 0.0) return;
+  nr = PebbleDens->Nrad;
   ns = PebbleDens->Nsec;
   dens = PebbleDens->Field;
   temp = Temperature->Field;
@@ -848,7 +849,8 @@ real dt;
   }
   evaptemp = EVAPORATIONTEMPERATURE/T2SI;
 
-  for (i=One_or_active; i<Max_or_active; i++) {
+  #pragma omp parallel for default(none) shared(nr,ns,dens,temp,facc,evaptemp) private(i,j,l)
+  for (i=0; i<nr; i++) {
     for (j=0; j<ns; j++) {
       l = j+i*ns;
       if (temp[l] > evaptemp) {
@@ -858,4 +860,5 @@ real dt;
     }
   }
 }
+
 
