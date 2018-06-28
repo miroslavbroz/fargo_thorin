@@ -160,6 +160,7 @@ char *argv[];
   OmegaFrame = OMEGAFRAME;
   if (Corotating == YES) OmegaFrame = GetPsysInfo (sys, FREQUENCY);
   Initialization (gas_density, gas_v_rad, gas_v_theta, gas_energy, gas_label); /* #THORIN */
+  InitOpacities ();
   InitComputeAccel ();
   if (Restart) OmegaFrame = GetOmegaFrame (NbRestart);	/* #THORIN */
   PhysicalTimeInitial = PhysicalTime;
@@ -217,6 +218,7 @@ char *argv[];
   }
   reb_free_simulation (rsim);   /* #THORIN */
   FreePlanetary (sys);
+  FreeOpacities ();
   fclose (plout);       	/* #THORIN */
   fclose (discard);
   if (Collisions==YES) fclose (mergers);

@@ -9,6 +9,7 @@ extern	real	SIGMA0;
 extern	int	NINTERM;
 extern	int	NTOT;
 extern	char	OUTPUTDIR[512];
+extern	char	INPUTDIR[512];
 extern	char	INNERBOUNDARY[512];
 extern	char	OUTERBOUNDARY[512];
 extern	char	ADVLABEL[512];

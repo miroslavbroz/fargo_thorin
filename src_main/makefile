@@ -78,7 +78,7 @@ MAINOBJ         = LowTasks.o SideEuler.o Output.o Init.o main.o Theo.o\
 		  Planet.o Viscosity.o Psys.o Force.o\
 		  var.o Pframeforce.o split.o merge.o commbound.o fpe.o rebin.o\
 		  mpiTasks.o\
-                  EnergySources.o Opacity.o\
+                  EnergySources.o Opacity.o Opacity2.o\
                   ReboundInterface.o\
 		  Pebbles.o\
 
