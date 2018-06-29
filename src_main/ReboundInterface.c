@@ -67,10 +67,6 @@ struct reb_collision coll;
     fprintf (mergers, "%#.18g\t%#.18g\t%#.18g\n", particles[pk].vx, particles[pk].vy, particles[pk].vz);
     fflush (mergers);
     masterprint ("No. of planets after the merger: %d\n", rsim->N_active-1);
-    if (rsim->N_active < 2) {
-      printf("No planets remaining! Exiting...\n");
-      prs_exit(1);
-    }
   }
   return value;
 }
@@ -315,6 +311,10 @@ real dt;
   particles[0].vz = 0.0;
   if (DiscardPlanets) {
     DiscardParticlesDist (rsim, dt);	// !has to be called after the helioc. transformation
+  }
+  if (rsim->N_active < 2) {
+    printf("No planets remaining! Exiting...\n");
+    prs_exit(1);
   }
   /* Here we do not put all planetary stuff back to 'sys', this is done later on
      (after rotations etc) in SynchronizeFargoRebound ().*/
