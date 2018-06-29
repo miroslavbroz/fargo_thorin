@@ -15,6 +15,7 @@ int opacity_gas_rows = 126, opacity_gas_cols = 94;
 real *opa_gas_tscale, *opa_gas_pscale, *opa_gas_ross, *opa_gas_planck;
 
 /* Simple linear interpolation */
+// Error: There was index overflow, and unnecceseray for-cycle (rewritten)
 
 real interp(real* x, real* y, int n, real x0) {
 
@@ -160,7 +161,7 @@ real opacity_semenov_malygin(int rosseland, real rho, real temperature)
     for (j = 0; j < 8 ; j++) {
       temp[j] = logtt[j][i];
     }
-  ; // Error: this is not bilinear at all!
+    // Error: this is not bilinear at all!
     // Error: this should be logarithmic (otherwise, there are uneccessary steps)!
     T_ev[i] = pow(10.0, interp(&logro[0], &temp[0], 8, logrho));
   }
@@ -211,7 +212,7 @@ real opacity_semenov_malygin(int rosseland, real rho, real temperature)
       aKrL = ((((eD[(KK+1)*6-1]*T1 + eD[(KK+1)*6-2])*T1 + eD[(KK+1)*6-3])*T1 + eD[(KK+1)*6-4])*T1 + eD[(KK+1)*6-5])*T1 + eD[(KK+1)*6-6];
 
       if (KK == 4) {
-        // Error: aKg_ext was totally undefined (in the original Semenov code, gas opacities were called)
+        // Error: aKg_ext was totally undefined (in the original Semenov F77 code, gas opacities were called)
         aKrR = 0.0;
       } else 
         aKrR = ((((eD[(KK+2)*6-1]*T2 + eD[(KK+2)*6-2])*T2 + eD[(KK+2)*6-3])*T2 + eD[(KK+2)*6-4])*T2 + eD[(KK+2)*6-5])*T2 + eD[(KK+2)*6-6];
