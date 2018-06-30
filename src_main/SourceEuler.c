@@ -655,9 +655,12 @@ real deltaT;
 	if (debug == YES) {
 	  ideb = i;
 	  jdeb = j;
-	  itdbg1 = 1.0/invdt1; itdbg2=1.0/invdt2;
-	  itdbg3=1.0/invdt3; itdbg4=1.0/invdt4;
-	  itdbg5=1.0/invdt5;
+          real eps=1.e-16;
+	  itdbg1 = 1.0/(invdt1+eps);
+          itdbg2 = 1.0/(invdt2+eps);
+	  itdbg3 = 1.0/(invdt3+eps);
+          itdbg4 = 1.0/(invdt4+eps);
+	  itdbg5 = 1.0/(invdt5+eps);
 	  mdtdbg = newdt;
 	  viscr = dxrad/dvr/4.0/CVNR/CVNR;     
 	  visct = dxtheta/dvt/4.0/CVNR/CVNR;
@@ -683,6 +686,7 @@ real deltaT;
   if (deltaT < newdt) newdt = deltaT;
   if (debug == YES) {
     printf ("Timestep control information for CPU %d: \n", CPU_Rank);
+    printf ("PhysicalTime = %e = %e DT = %e DT*Ninterm\n", PhysicalTime, PhysicalTime/DT, PhysicalTime/(DT*NINTERM));
     printf ("Most restrictive cell at i=%d and j=%d\n", ideb, jdeb);
     printf ("located at radius Rmed         : %g\n", Rmed[ideb]);
     printf ("Sound speed limit              : %g\n", itdbg1);
@@ -723,7 +727,7 @@ PolarGrid *Rho, *Energy;
       if (!EnergyEq) {
         cs[l] = AspectRatio(Rmed[i])*sqrt(G*1.0/Rmed[i])*pow(Rmed[i], FLARINGINDEX);
       } else {
-        cs[l] = sqrt( ADIABIND*(ADIABIND-1.0)*energy[l]/rho[l] );
+        cs[l] = sqrt( ADIABIND*(ADIABIND-1.0)*fabs(energy[l])/rho[l] );
       }
     }
   }

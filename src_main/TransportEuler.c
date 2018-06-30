@@ -296,7 +296,7 @@ real dt;
       if (j == ns-1) ljp = i*ns;
       dqm = (qb[l]-qb[ljm]);
       dqp = (qb[ljp]-qb[l]);
-      if (dqp * dqm > 0.0)
+      if ((dqp*dqm > 0.0) && (dqp+dqm != 0.0))
 	dq[l] = dqp*dqm/(dqp+dqm)*invdxtheta;
       else
 	dq[l] = 0.0;

@@ -471,8 +471,10 @@ real dt;
     pdens_mean = temp;
     MPI_Allreduce(&ncell, &tempint, 1, MPI_INT, MPI_SUM, MPI_COMM_WORLD);
     ncell = tempint;
-    Hpeb_mean /= (real)ncell;
-    pdens_mean /= (real)ncell;
+    if (ncell > 0) {
+      Hpeb_mean /= (real)ncell;
+      pdens_mean /= (real)ncell;
+    }
     // STEP 4 - using average values, find the MODEL ACCRETION RATE to reduce the upper
     // limit from STEP 3 (formulae from e.g. Morbidelli et al. 2015)
     if (Mplanet < Mt) {                         // Bondi or Hill regime
