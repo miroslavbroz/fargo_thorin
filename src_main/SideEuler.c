@@ -12,8 +12,16 @@ original code by Frédéric Masset
 
 #include "fargo.h"
 
-extern boolean OpenInner, OpenOuter, NonReflecting, OuterSourceMass;
+#define DENSITYFLOOR 1.0e-16
+#define ENERGYFLOOR  1.0e-16
 
+#define c_max(a,b) \
+  ({ __typeof__ (a) _a = (a); \
+     __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
+
+
+extern boolean OpenInner, OpenOuter, NonReflecting, OuterSourceMass;
 
 real GasTotalMass (array)
 PolarGrid *array;
@@ -149,9 +157,9 @@ PolarGrid *Vrad, *Rho, *Energy;
 //      vr[l] = vr[l+ns];
 
     /* extrapolate the ghost ring */
-    rho[l-ns] = rho[l]+(rho[l]-rho[l+ns]);
+    rho[l-ns] = c_max(rho[l]+(rho[l]-rho[l+ns]), DENSITYFLOOR);
     if (EnergyEq == YES)
-      energy[l-ns] = energy[l]+(energy[l]-energy[l+ns]);
+      energy[l-ns] = c_max(energy[l]+(energy[l]-energy[l+ns]), ENERGYFLOOR);
 
     if (vr[l+ns] > 0.0) {
       vr[l] = 0.0; /* we just allow outflow [inwards] */
