@@ -28,7 +28,7 @@
 
 static PolarGrid *GradTemperRad, *GradTemperTheta, *GradTemperMagnitude;
 static PolarGrid *DiffCoefCentered, *DiffCoefIfaceRad, *DiffCoefIfaceTheta;
-static PolarGrid *Opacity, *VolumeDensity;
+static PolarGrid *VolumeDensity;
 static PolarGrid *Flaring, *Qirradiation;
 
 static PolarGrid *DiscretizationCoefA, *DiscretizationCoefB;

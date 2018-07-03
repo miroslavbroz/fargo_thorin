@@ -222,6 +222,7 @@ char *filename;
   if ((*WRITEDIVV == 'Y') || (*WRITEDIVV == 'y')) Write_Divergence = YES;
   if ((*WRITEQPLUS == 'Y') || (*WRITEQPLUS == 'y')) Write_Qplus = YES;
   if ((*WRITEQBALANCE == 'Y') || (*WRITEQBALANCE == 'y')) Write_Qbalance = YES;
+  if ((*WRITEOPACITY == 'Y') || (*WRITEOPACITY == 'y')) Write_Opacity = YES;
   if (COOLINGTIME > 0.0) ParametricCooling = YES;
   if ((*STELLARIRRADIATION == 'y') || (*STELLARIRRADIATION == 'Y')) StellarIrradiation = YES;
   if ((*INITIALIZEFROMFILE == 'y') || (*INITIALIZEFROMFILE == 'Y')) InitFromFile = YES;

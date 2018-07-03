@@ -58,6 +58,7 @@ extern	char	WRITEENERGY[512];
 extern	char	WRITEDIVV[512];
 extern	char	WRITEQPLUS[512];
 extern	char	WRITEQBALANCE[512];
+extern	char	WRITEOPACITY[512];
 extern	real	ADIABIND;
 extern	real	COOLINGTIME;
 extern	char	STELLARIRRADIATION[512];
