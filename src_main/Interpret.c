@@ -241,6 +241,7 @@ char *filename;
   if (PARAMETRICACCRETION > 0.0) PrescribedAccretion = YES;
   if (GETTORQUEFORPLANET >= 0) TorqueDensity = YES;
   if ((*DISCARDPLANETS == 'y') || (*DISCARDPLANETS == 'Y')) DiscardPlanets = YES;
+  if ((*AERODYNAMICDRAG == 'y') || (*AERODYNAMICDRAG == 'Y')) AerodynamicDrag = YES;
   if (PARAMETRICOPACITY > 0.0) {
     opacity_func = opacity_const;
     masterprint ("Opacity is constant.\n");

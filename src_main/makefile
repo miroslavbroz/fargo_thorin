@@ -75,7 +75,7 @@ SHELL		=  /bin/sh
 # #THORIN: adds new object files
 MAINOBJ         = LowTasks.o SideEuler.o Output.o Init.o main.o Theo.o\
 		  Interpret.o SourceEuler.o TransportEuler.o\
-		  Planet.o Viscosity.o Psys.o Force.o\
+		  Planet.o Viscosity.o Psys.o Force.o Drag.o\
 		  var.o Pframeforce.o split.o merge.o commbound.o fpe.o rebin.o\
 		  mpiTasks.o\
                   EnergySources.o Opacity.o\

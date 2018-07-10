@@ -113,3 +113,4 @@ extern	real	EVAPORATIONRATE;
 extern	real	FIRSTSTEP;
 extern	real	MINIMUMSTEP;
 extern	real	MAXIMUMSTEP;
+extern	char	AERODYNAMICDRAG[512];
