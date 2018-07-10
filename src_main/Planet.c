@@ -168,7 +168,7 @@ PlanetarySystem *sys;
 /* Equlibrium vertical density profile rho(z) */
 
 real rho_func(real z) {
-  return exp(-pow(z,2));
+  return exp(-z*z);
 }
 
 /* A driver for Simpson-rule integration (as in NR) */

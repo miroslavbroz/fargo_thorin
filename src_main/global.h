@@ -47,3 +47,5 @@ real (*opacity_func)(real, real);
 boolean AlphaFlock;
 boolean DiscardPlanets;
 real dt_stellar=1.0e38;
+boolean AerodynamicDrag;
+

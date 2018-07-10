@@ -207,3 +207,6 @@ void Heating1 ();
 void InitHeating ();
 void Heating ();
 void DiffusionTimestep ();
+void StokesDrag ();
+void AdvanceSystemFromDrag ();
+

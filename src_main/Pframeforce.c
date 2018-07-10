@@ -24,6 +24,11 @@
 
 #include "fargo.h"
 
+#define c_max(a,b) \
+  ({ __typeof__ (a) _a = (a); \
+     __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
+
 extern boolean AllowAccretion, Corotating, Indirect_Term;
 static Pair IndirectTerm;
 static real vt_int[MAX1D], vt_cent[MAX1D];
@@ -45,7 +50,7 @@ PlanetarySystem *sys;
   int m, Nvert;
   real d2, d, H, H2, zmax, deltaz;
   real rsm[sys->nb], rsm2[sys->nb], sigma, znode, znode2, denom, ax, ay, ar, at, axindir, ayindir;
-  real rst, rst2[sys->nb], rst3[sys->nb], rst4[sys->nb], taper, omegainv, r2, r2chk_1, r2chk_2;
+  real rst, rst2[sys->nb], rst3[sys->nb], rst4[sys->nb], taper, omegainv, r2, Rsup_Rinf2, r2chk_1, r2chk_2;
   real integstar, sum, tmp, tmpbuf;
   real cs_avr, integstar_avr, sigma_avr, H_avr;
   real tau_avr=0.0, p_H_avr=0.0, p_integstar_avr=0.0, p_integstar=0.0, pax=0.0, pay=0.0, pH=0.0, Hcorr=0.0;
@@ -117,7 +122,7 @@ PlanetarySystem *sys;
   aystar = 0.0;
 #pragma omp parallel \
   firstprivate (tau_avr,p_H_avr,p_integstar_avr,p_integstar,pax,pay,pH,Hcorr) \
-  private (omegainv, r2, Nvert, cs_avr, H_avr, \
+  private (omegainv, r2, Rsup_Rinf2, Nvert, cs_avr, H_avr, \
 H2, zmax, deltaz, sigma_avr, integstar_avr, znode, znode2, sum, \
 d2, d, denom, IntegrateLocally, ax, ay, x, y, mcell, H, \
 xpl, ypl, zpl, s2, r2chk_1, r2chk_2, IntegrateWithPlanet, integpl, p_integpl, hillcut, \
@@ -136,6 +141,8 @@ i,j,k,l,m) \
   for (i = 0; i<nr; i++) {
     omegainv = OmegaInv[i];
     r2 = Rmed2[i];
+    Rsup_Rinf2 = Rsup[i]-Rinf[i];
+    Rsup_Rinf2 *= Rsup_Rinf2;
     Nvert = 10;
     // 1|---> in each ring, estimate the acceleration from the star using the Gaussian profile with azim. average H
     cs_avr = 0.0;
@@ -260,7 +267,7 @@ i,j,k,l,m) \
               } else {
                 taper = 1.0;
               }	      
-	      d2 += rsm2[k];
+              d2 += c_max(rsm2[k], Rsup_Rinf2);
               d = sqrt(d2);
               denom = d*d2;
               integpl[k] += sum/denom*taper;		// 2DO condition below should again be parametric
@@ -272,7 +279,7 @@ i,j,k,l,m) \
                 } else {
                   taper = 1.0;
                 }
-                d2 += rsm2[k];
+                d2 += c_max(rsm2[k], Rsup_Rinf2);
                 d = sqrt(d2);
                 denom = d*d2;
                 integpl[k] += sum/denom*taper;
@@ -285,7 +292,7 @@ i,j,k,l,m) \
                 } else {
                   taper = 1.0;
                 }
-                d2 += rsm2[k];
+                d2 += c_max(rsm2[k], Rsup_Rinf2);
                 d = sqrt(d2);
                 denom = d*d2;
                 p_integpl[k] += sum/denom*taper;
@@ -297,7 +304,7 @@ i,j,k,l,m) \
                   } else {
                     taper = 1.0;
                   }
-                  d2 += rsm2[k];
+                  d2 += c_max(rsm2[k], Rsup_Rinf2);
                   d = sqrt(d2);
                   denom = d*d2;
                   p_integpl[k] += sum/denom*taper;
@@ -524,7 +531,7 @@ real m,x,y,z,vz;
   ns = Rho->Nsec;
   cs = SoundSpeed->Field;
   r = sqrt(x*x + y*y);          /* find position in the midplane */
-  if ( (VERTICALDAMPING > 0.0) && (z>0.0) && (r >= Rinf[Zero_or_active] && r <= Rsup[Max_or_active-1]) ) {
+  if ( (VERTICALDAMPING > 0.0) && (r >= Rinf[Zero_or_active] && r <= Rsup[Max_or_active-1]) ) {
      /* condition satisfied only for a CPU which contains the planet within its active zone */
     ang = atan2(y,x);           /* get the damping value on this cpu */
     if (ang < 0.0) ang += 2.0*PI;

@@ -257,6 +257,8 @@ struct reb_simulation *rsim;
     if (IsDisk == YES) {
       FillForcesArrays (Rho, sys);		/* #THORIN: calculate grav.accelerations (instead of standard potential) */
       AdvanceSystemFromDisk (Rho, sys, dt);	/* #THORIN: use accelerations from the above function + Tanaka&Ward(04) damping */
+      if (AerodynamicDrag == YES)
+        AdvanceSystemFromDrag (Rho, Vrad, Vtheta, sys, dt);
     }
     AdvanceSystemRebound (sys, rsim, dt);	/* #THORIN */
     if (Corotating == YES) {
