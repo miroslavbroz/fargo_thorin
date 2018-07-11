@@ -227,6 +227,7 @@ PolarGrid   *dens, *gasvr, *gasvt, *gasenerg, *label;
       ActualizeQbalance ();
       WriteDiskPolar (Qbalance, index);
     }
+    if (Write_Opacity == YES) WriteDiskPolar (Opacity, index);
     if (Pebbles == YES) {
       WritePebbles (index);
     }

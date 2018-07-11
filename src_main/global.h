@@ -22,7 +22,7 @@ real heatsrc[MAXPLANETS];						/* #THORIN */
 int heatsrc_max;							/* #THORIN */
 int TimeStep=0;
 boolean EnergyEq, StoreEnergy, ParametricCooling, Damping, DampVrad, DampInit, DampFlux, StellarIrradiation;	/* #THORIN */
-boolean InitFromFile, Write_Temperature, Write_Energy, Write_Divergence, Write_Qplus, Write_Qbalance;			/*#THORIN*/
+boolean InitFromFile, Write_Temperature, Write_Energy, Write_Divergence, Write_Qplus, Write_Qbalance, Write_Opacity;			/*#THORIN*/
 boolean Collisions, WriteTorque, WriteTorqueMapFile, MonitorNPL, FeelDisk;  				/* #THORIN */
 boolean Pebbles, Write_Eta, AccretHeating, BackReaction, ActualizeLuminosity, DiffusiveParticles, PrescribedAccretion; 	/* #THORIN */
 boolean heatsrc_index[MAXPLANETS], TorqueDensity;	/* #THORIN */
@@ -33,7 +33,7 @@ boolean CentrifugalBalance, ExcludeHill, SloppyCFL;
 MPI_Status fargostat;
 PolarGrid *CellAbscissa, *CellOrdinate;
 PolarGrid *RhoStar, *RhoInt;
-PolarGrid *Temperature, *Pressure, *SoundSpeed, *Qplus, *Qminus, *Qbalance; 		/* #THORIN */
+PolarGrid *Temperature, *Pressure, *SoundSpeed, *Qplus, *Qminus, *Qbalance, *Opacity; 	/* #THORIN */
 PolarGrid *DivergenceVelocity, *TAURR, *TAURP, *TAUPP;					/* #THORIN */
 PolarGrid *GasAccelrad, *GasAcceltheta, *DragForceRad, *DragForceTheta;			/* #THORIN */
 PolarGrid *PebbleDens, *PebbleVrad, *PebbleVtheta, *StokesNumber;

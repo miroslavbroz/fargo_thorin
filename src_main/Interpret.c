@@ -207,9 +207,11 @@ char *filename;
   if (OverridesOutputdir == YES) {
     sprintf (OUTPUTDIR, "%s", NewOutputdir);
   }
-				/* Add a trailing slash to OUTPUTDIR if needed */
+  /* Add a trailing slash to OUTPUTDIR if needed */
   if (*(OUTPUTDIR+strlen(OUTPUTDIR)-1) != '/')
     strcat (OUTPUTDIR, "/");
+  if (*(INPUTDIR+strlen(INPUTDIR)-1) != '/')
+    strcat (INPUTDIR, "/");
   /* #THORIN */
   if ((*ENERGYEQUATION == 'Y') || (*ENERGYEQUATION == 'y')) {
     EnergyEq = YES;
@@ -220,6 +222,7 @@ char *filename;
   if ((*WRITEDIVV == 'Y') || (*WRITEDIVV == 'y')) Write_Divergence = YES;
   if ((*WRITEQPLUS == 'Y') || (*WRITEQPLUS == 'y')) Write_Qplus = YES;
   if ((*WRITEQBALANCE == 'Y') || (*WRITEQBALANCE == 'y')) Write_Qbalance = YES;
+  if ((*WRITEOPACITY == 'Y') || (*WRITEOPACITY == 'y')) Write_Opacity = YES;
   if (COOLINGTIME > 0.0) ParametricCooling = YES;
   if ((*STELLARIRRADIATION == 'y') || (*STELLARIRRADIATION == 'Y')) StellarIrradiation = YES;
   if ((*INITIALIZEFROMFILE == 'y') || (*INITIALIZEFROMFILE == 'Y')) InitFromFile = YES;
@@ -251,6 +254,9 @@ char *filename;
   } else if (*OPACITYTABLE == 'L') {
     opacity_func = opacity_LP85;
     masterprint ("Opacity is Lin & Papaloizou (1985).\n");
+  } else if (*OPACITYTABLE == 'S') {
+    opacity_func = opacity_SM03;
+    masterprint ("Opacity is Semenov (2003) and Malygin etal. (2014) for gas.\n");
   } else {
     opacity_func = opacity_BL94;
     masterprint ("Opacity is Bell & Lin (1994).\n");

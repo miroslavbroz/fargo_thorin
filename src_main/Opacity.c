@@ -146,7 +146,7 @@ real opacity_ZHU12 (real rho, real T) {
 
   real xlop, xlp, xlt, rosstabd, pre;
 
-  pre = rho*T*8.314472*1.e7/2.4;
+  pre = R_STANDARD*1.0e7/MMW * rho * T;
   xlp = log10(pre);
   xlt = log10(T);
 
