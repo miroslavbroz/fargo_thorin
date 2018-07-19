@@ -253,6 +253,9 @@ void InitOpacities()
   char name[256];
   FILE *input;
 
+  if (opacity_func != opacity_SM03)
+    return;
+
   if (CPU_Rank > 0) MPI_Recv (&foo, 1, MPI_INT, CPU_Rank-1, 10, MPI_COMM_WORLD, &fargostat);
   
   sprintf(name, "%s%s", INPUTDIR, "data_gasopacity_malygin.txt");
@@ -297,6 +300,8 @@ void InitOpacities()
 }
 
 void FreeOpacities() {
+  if (opacity_func != opacity_SM03)
+    return;
   mastererr("Freeing opacities...");
   free(gas_pgrid);
   free(gas_tgrid);
