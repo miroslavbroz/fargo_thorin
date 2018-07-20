@@ -380,17 +380,43 @@ struct reb_simulation *rsim;
   invdtreb_sq = 1.0/dt;
 }
 
+real get_interior_disk_mass(real r_perp) {
+  int i, nr, ns;
+  real mdisk = 0.0;
+  nr = SoundSpeed->Nrad;
+  ns = SoundSpeed->Nsec;
+  i = 0;
+  while ((i < nr) && (Rsup[i] < r_perp)) {
+    mdisk += ns*Surf[i]*SigmaMed[i];
+    i++;
+  }
+  if (i < nr) {
+    mdisk += (r_perp-Rinf[i])/(Rsup[i]-Rinf[i]) * ns*Surf[i]*SigmaMed[i];
+  }
+  printf("mdisk = %.8e\n", mdisk);
+  return mdisk;
+}
+
 /** Calculates and outputs the orbital elements. */
 void OutputElements (rsim)	// note: plout is a global file name
 struct reb_simulation *rsim;
 {
   int Nact, i;
+  struct reb_particle plus_disk = { 0 };
   struct reb_orbit orbit;
   struct reb_particle* const particles = rsim->particles;
   if (CPU_Rank != CPU_Number-1) return;
   Nact = rsim->N_active;
+  plus_disk.x = particles[0].x;
+  plus_disk.y = particles[0].y;
+  plus_disk.z = particles[0].z;
+  plus_disk.vx = particles[0].vx;
+  plus_disk.vy = particles[0].vy;
+  plus_disk.vz = particles[0].vz;
   for (i=1; i<Nact; i++) {
-    orbit = reb_tools_particle_to_orbit (G, particles[i], particles[0]);
+    real r_perp = sqrt(particles[i].x*particles[i].x + particles[i].y*particles[i].y);
+    plus_disk.m = particles[0].m + get_interior_disk_mass(r_perp);
+    orbit = reb_tools_particle_to_orbit (G, particles[i], plus_disk);
     fprintf (plout, "%d\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\n", \
       particles[i].hash, PhysicalTime, orbit.a, orbit.e, orbit.inc, \
       orbit.Omega, orbit.omega, orbit.f,
