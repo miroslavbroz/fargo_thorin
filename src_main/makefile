@@ -33,7 +33,7 @@ CC_THORIN = gcc
 OPT_THORIN = -O3 -march=native -Wall -Wno-unknown-pragmas -Wno-unused-result\
               -I../src_reb/ -std=c99 -Wl,-rpath,src_main/ -Wpointer-arith
 OPTSEQ_THORIN =
-PARAOPT_THORIN =
+PARAOPT_THORIN = -lmpich
 PARACC_THORIN = mpicc
 
 # Standard Linux build with OpenMP support (multithreading)

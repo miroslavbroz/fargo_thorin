@@ -66,3 +66,4 @@ extern boolean AlphaFlock;
 extern boolean DiscardPlanets;
 extern real dt_stellar;
 extern boolean AerodynamicDrag;
+extern boolean ElementsWithDisk;

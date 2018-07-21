@@ -116,3 +116,4 @@ extern	real	FIRSTSTEP;
 extern	real	MINIMUMSTEP;
 extern	real	MAXIMUMSTEP;
 extern	char	AERODYNAMICDRAG[512];
+extern	char	ELEMENTSWITHDISK[512];

@@ -48,4 +48,5 @@ boolean AlphaFlock;
 boolean DiscardPlanets;
 real dt_stellar=1.0e38;
 boolean AerodynamicDrag;
+boolean ElementsWithDisk;
 
