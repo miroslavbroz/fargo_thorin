@@ -8,7 +8,7 @@
 
 export OPENGL=
 export CC=gcc
-export OPT=
+export OPT=-std=c99 -Wpointer-arith -Wno-unused-result -D_GNU_SOURCE -O3 -march=native
 
 # see the file below for options!
 include ../src_reb/Makefile.defs

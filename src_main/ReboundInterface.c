@@ -404,31 +404,34 @@ struct reb_simulation *rsim;
   int Nact, i;
   struct reb_orbit orbit;
   struct reb_particle* const particles = rsim->particles;
-  struct reb_particle plus_disk = { 0 };
-  if (CPU_Rank != CPU_Number-1) return;
+  struct reb_particle centre = { 0 };
+  if ((CPU_Rank != CPU_Number-1) && (!ElementsWithDisk)) return;
+
+  centre.m = particles[0].m;
+  centre.x = particles[0].x;
+  centre.y = particles[0].y;
+  centre.z = particles[0].z;
+  centre.vx = particles[0].vx;
+  centre.vy = particles[0].vy;
+  centre.vz = particles[0].vz;
+
   Nact = rsim->N_active;
-  if (ElementsWithDisk) {
-    plus_disk.x = particles[0].x;
-    plus_disk.y = particles[0].y;
-    plus_disk.z = particles[0].z;
-    plus_disk.vx = particles[0].vx;
-    plus_disk.vy = particles[0].vy;
-    plus_disk.vz = particles[0].vz;
-  }
   for (i=1; i<Nact; i++) {
     if (ElementsWithDisk) {
       real r_perp = sqrt(particles[i].x*particles[i].x + particles[i].y*particles[i].y);
-      plus_disk.m = particles[0].m + GetInteriorDiskMass(r_perp);
-      orbit = reb_tools_particle_to_orbit (G, particles[i], plus_disk);
-    } else
-      orbit = reb_tools_particle_to_orbit (G, particles[i], particles[0]);
-   
-    fprintf (plout, "%d\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\n", \
-      particles[i].hash, PhysicalTime, orbit.a, orbit.e, orbit.inc, \
-      orbit.Omega, orbit.omega, orbit.f,
-      particles[i].m*MassTaper, particles[i].gas*MassTaper, particles[i].solid*MassTaper,
-      particles[i].r, particles[i].x, particles[i].y, particles[i].z);    
-    fflush (plout);
+      centre.m = particles[0].m + GetInteriorDiskMass(r_perp);
+    }
+
+    if (CPU_Rank == CPU_Number-1) {
+      orbit = reb_tools_particle_to_orbit (G, particles[i], centre);
+
+      fprintf (plout, "%d\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\t%.12g\n", \
+        particles[i].hash, PhysicalTime, orbit.a, orbit.e, orbit.inc, \
+        orbit.Omega, orbit.omega, orbit.f,
+        particles[i].m*MassTaper, particles[i].gas*MassTaper, particles[i].solid*MassTaper,
+        particles[i].r, particles[i].x, particles[i].y, particles[i].z);
+      fflush (plout);
+    }
   }
 }
 
