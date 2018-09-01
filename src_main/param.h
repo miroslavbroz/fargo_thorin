@@ -117,3 +117,4 @@ extern	real	MINIMUMSTEP;
 extern	real	MAXIMUMSTEP;
 extern	char	AERODYNAMICDRAG[512];
 extern	char	ELEMENTSWITHDISK[512];
+extern	char	PEBBLEGRAVITY[512];

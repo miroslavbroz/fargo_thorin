@@ -246,6 +246,7 @@ char *filename;
   if ((*DISCARDPLANETS == 'y') || (*DISCARDPLANETS == 'Y')) DiscardPlanets = YES;
   if ((*AERODYNAMICDRAG == 'y') || (*AERODYNAMICDRAG == 'Y')) AerodynamicDrag = YES;
   if ((*ELEMENTSWITHDISK == 'y') || (*ELEMENTSWITHDISK == 'Y')) ElementsWithDisk = YES;
+  if ((*PEBBLEGRAVITY == 'y') || (*PEBBLEGRAVITY == 'Y')) PebbleGravity = YES;
   if (PARAMETRICOPACITY > 0.0) {
     opacity_func = opacity_const;
     masterprint ("Opacity is constant.\n");

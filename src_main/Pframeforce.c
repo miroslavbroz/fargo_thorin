@@ -56,10 +56,11 @@ PlanetarySystem *sys;
   real tau_avr=0.0, p_H_avr=0.0, p_integstar_avr=0.0, p_integstar=0.0, pax=0.0, pay=0.0, pH=0.0, Hcorr=0.0;
   Pair IndirectTermFromPlanets;
   boolean IntegrateWithPlanet[sys->nb], IntegrateLocally;
-  real axstar, aystar, hillcut[sys->nb], mcell;
+  real axstar, aystar, hillcut[sys->nb], mcell, pmcell;
   real rhill[sys->nb], smoothing2[sys->nb], Hpl[sys->nb], s2[sys->nb], integpl[sys->nb], p_integpl[sys->nb], rmorevert2[sys->nb];
   real tmparray[sys->nb], axpl[sys->nb], aypl[sys->nb];
-  real *agr, *agt, *pagr, *pagt, *rho, *tau, *cs, *abs, *ord, *tqwk;
+  real *agr, *agt, *pagr, *pagt, *rho, *prho, *tau, *cs, *abs, *ord, *tqwk;
+
   agr = GravAccelRad->Field;
   agt = GravAccelTheta->Field;
   rho = Rho->Field;
@@ -68,10 +69,12 @@ PlanetarySystem *sys;
   ord = CellOrdinate->Field;
   nr = Rho->Nrad;
   ns = Rho->Nsec;
+
   if (Pebbles) {
     pagr = PebbleGravAccelRad->Field;
     pagt = PebbleGravAccelTheta->Field;
     tau = StokesNumber->Field;
+    prho = PebbleDens->Field;
   }
   if (TorqueDensity) tqwk = Torque->Field;
   npl = sys->nb;
@@ -124,7 +127,7 @@ PlanetarySystem *sys;
   firstprivate (tau_avr,p_H_avr,p_integstar_avr,p_integstar,pax,pay,pH,Hcorr) \
   private (omegainv, r2, Rsup_Rinf2, Nvert, cs_avr, H_avr, \
 H2, zmax, deltaz, sigma_avr, integstar_avr, znode, znode2, sum, \
-d2, d, denom, IntegrateLocally, ax, ay, x, y, mcell, H, \
+d2, d, denom, IntegrateLocally, ax, ay, x, y, mcell, pmcell, H, \
 xpl, ypl, zpl, s2, r2chk_1, r2chk_2, IntegrateWithPlanet, integpl, p_integpl, hillcut, \
 sigma, integstar, taper, tmp, ar, mpl, at, \
 i,j,k,l,m) \
@@ -154,11 +157,13 @@ i,j,k,l,m) \
     }
     cs_avr /= (real)ns;
     H_avr = cs_avr*omegainv*SQRT_ADIABIND_INV;
+
     if (Pebbles) {
       tau_avr /= (real)ns;
       p_H_avr = H_avr*sqrt(PEBBLEALPHA/tau_avr);
       p_integstar_avr = 0.0;
     }
+
     H2 = H_avr*H_avr;
     zmax = 3.0*H_avr;
     deltaz = zmax/(real)Nvert;
@@ -173,6 +178,7 @@ i,j,k,l,m) \
       d = sqrt(d2);
       denom = d*d2;
       integstar_avr += sum/denom;
+
       if (Pebbles) {
 	znode2 *= PEBBLEALPHA/tau_avr;
         d2 = r2 + znode2;
@@ -202,11 +208,14 @@ i,j,k,l,m) \
       H2 = H*H;
       // 2|---> check for H vs H_avrg
       if (fabs(H-H_avr)/H_avr > 0.05) IntegrateLocally = YES;
+
       if (Pebbles) {
+        pmcell = prho[l]*Surf[i];
 	Hcorr = sqrt(PEBBLEALPHA/tau[l]);
         pH = H*Hcorr;
 	if (fabs(pH-p_H_avr)/p_H_avr > 0.05) IntegrateLocally = YES;
       }
+
       // 2|<---
       // 3|---> check for the distance w.r.t. planet and thickness related to
       // standard smoothing- Calculate and save cell-planet distances and (if needed) taper
@@ -251,12 +260,14 @@ i,j,k,l,m) \
           d = sqrt(d2);
           denom = d*d2;
           integstar += sum/denom;
+
           if (Pebbles) {
             d2 = r2 + znode2*Hcorr*Hcorr;
             d = sqrt(d2);
             denom = d*d2;
             p_integstar += sum/denom;
           }
+
           for (k = 0; k < npl; k++) {	// part for the planets
             if (IntegrateWithPlanet[k]==YES) {
               zpl = sys->z[k];
@@ -284,6 +295,7 @@ i,j,k,l,m) \
                 denom = d*d2;
                 integpl[k] += sum/denom*taper;
               }
+
               if (Pebbles) {
                 d2 = s2[k] + (znode*Hcorr-zpl)*(znode*Hcorr-zpl);
                 if (d2 < rst2[k]) {
@@ -309,7 +321,8 @@ i,j,k,l,m) \
                   denom = d*d2;
                   p_integpl[k] += sum/denom*taper;
                 }
-              }
+              } // Pebbles
+
             }
           }
         } // 4|<--- 
@@ -361,6 +374,7 @@ i,j,k,l,m) \
             aypl_priv[k] += mcell*tmp; 
 	    if (TorqueDensity && GETTORQUEFORPLANET==k) tqwk[l] += xpl*mcell*tmp;
           }
+
           if (Pebbles) {
             if (zpl < - 0.05*pH || zpl > 0.05*pH) {
               tmp = (x-xpl)*p_integpl[k]/(2.0*sigma);
@@ -368,13 +382,24 @@ i,j,k,l,m) \
               tmp = (x-xpl)*p_integpl[k]/sigma;
             }
             pax += -mpl*tmp;
+            if (PebbleGravity && i>=Zero_or_active && i<Max_or_active) {
+              if (ExcludeHill) tmp *= hillcut[k];
+              axpl_priv[k] += pmcell*tmp;
+              if (TorqueDensity && GETTORQUEFORPLANET==k) tqwk[l] += -ypl*pmcell*tmp;
+            }
             if (zpl < - 0.05*pH || zpl > 0.05*pH) {
               tmp = (y-ypl)*p_integpl[k]/(2.0*sigma);
             } else {
               tmp = (y-ypl)*p_integpl[k]/sigma;
             }
             pay += -mpl*tmp;
-          }          
+            if (PebbleGravity && i>=Zero_or_active && i<Max_or_active) {
+              if (ExcludeHill) tmp *= hillcut[k];
+              aypl_priv[k] += pmcell*tmp; 
+	      if (TorqueDensity && GETTORQUEFORPLANET==k) tqwk[l] += xpl*pmcell*tmp;
+            }
+          } // Pebbles          
+
         } else {  // simple point-mass acceleration otherwise
           mpl *= MassTaper;	// note: MassTaper does not have to be used above because IntegrateWithPlanet==YES only when MassTaper == 1.0
           d2 = s2[k] + zpl*zpl + smoothing2[k];
@@ -394,15 +419,27 @@ i,j,k,l,m) \
             aypl_priv[k] += mcell*tmp;
 	    if (TorqueDensity && GETTORQUEFORPLANET==k) tqwk[l] += xpl*mcell*tmp;
           }
+
           if (Pebbles) {
             d2 += - smoothing2[k] + smoothing2[k]*Hcorr*Hcorr;
             d = sqrt(d2);
             denom = d*d2;
             tmp = (x-xpl)/denom;
             pax += -mpl*tmp;
+            if (PebbleGravity && i>=Zero_or_active && i<Max_or_active) {
+              if (ExcludeHill) tmp *= hillcut[k];
+              axpl_priv[k] += pmcell*tmp;
+              if (TorqueDensity && GETTORQUEFORPLANET==k) tqwk[l] = -ypl*pmcell*tmp;
+            }
             tmp = (y-ypl)/denom;
             pay += -mpl*tmp;
-          }
+            if (PebbleGravity && i>=Zero_or_active && i<Max_or_active) {
+              if (ExcludeHill) tmp *= hillcut[k];
+              aypl_priv[k] += pmcell*tmp;
+	      if (TorqueDensity && GETTORQUEFORPLANET==k) tqwk[l] += xpl*pmcell*tmp;
+            }
+          } // Pebbles
+
         }
       }
       // 7|<---
@@ -410,12 +447,14 @@ i,j,k,l,m) \
       at = (x*ay - y*ax)*InvRmed[i];
       agr[l] += ar;
       agt[l] += at;
+
       if (Pebbles) {
         ar = (x*pax + y*pay)*InvRmed[i];
         at = (x*pay - y*pax)*InvRmed[i];
         pagr[l] += ar;
         pagt[l] += at;
       }
+
     }
   }
   #pragma omp critical
