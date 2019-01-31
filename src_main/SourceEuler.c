@@ -218,9 +218,6 @@ struct reb_simulation *rsim;
   boolean Crashed=NO;
   gastimestepcfl = 1;
   /* ----- */
-  if (EnergyEq) {       				/* #THORIN */
-    ComputeSoundSpeed (Rho, Energy);
-  }
   if (IsDisk == YES) {
     CommunicateBoundaries (Rho,Vrad,Vtheta,Energy,Label); /* see commbound.c*/
     if (Pebbles) SynchronizePebbleDisc ();		  /* #THORIN */
@@ -309,6 +306,9 @@ struct reb_simulation *rsim;
       Transport (Rho, Vrad, Vtheta, Energy, Label, dt); 	/* #THORIN */
       ApplyBoundaryCondition (Vrad, Vtheta, Rho, Energy, dt);	/* #THORIN */
       ComputeTemperatureField (Rho, Energy); 			/* #THORIN */
+      if (EnergyEq) {						/* #THORIN */
+        ComputeSoundSpeed (Rho, Energy);
+      }
       if (Pebbles) EvolvePebbleDisk (dt);			/* #THORIN: advance the disk of pebbles */
     }
     PhysicalTime += dt;

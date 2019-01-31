@@ -165,6 +165,9 @@ char *argv[];
   if (Restart) OmegaFrame = GetOmegaFrame (NbRestart);	/* #THORIN */
   PhysicalTimeInitial = PhysicalTime;
   MultiplyPolarGridbyConstant (gas_density, ScalingFactor);
+  if (EnergyEq) {                                     /* #THORIN */
+    ComputeSoundSpeed (gas_density, gas_energy);
+  }
   for (i = begin_i; i <= NTOT; i++) {
     InnerOutputCounter++;
     if (InnerOutputCounter == 1) {
