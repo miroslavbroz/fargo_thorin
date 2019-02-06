@@ -476,6 +476,8 @@ i,j,k,l,m) \
   for (k=0; k<npl; k++) {
     sys->ay[k] = tmparray[k];
   }
+  if (debug == YES)
+    printf("FillForcesArrays: t,x,y,ax,ay = %.8e %.8e %.8e %.8e %.8e\n", PhysicalTime, sys->x[0], sys->y[0], sys->ax[0], sys->ay[0]);
   // correct the disk acceleration using the indirect terms
   axindir = IndirectTerm.x;
   ayindir = IndirectTerm.y;
