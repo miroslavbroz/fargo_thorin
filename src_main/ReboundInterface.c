@@ -242,6 +242,7 @@ int nrestart;
   rdenominv = 1.0/(4.0*PI*rho);
   sprintf (filename, "%snbody.orbits.dat", OUTPUTDIR);
   plout = fopenp (filename, "a");     // "a" won't empty the file if it exists
+  OutputElements (rsim);
   sprintf (filename, "%snbody.discard.dat", OUTPUTDIR);
   discard = fopenp (filename, "a");
   if (Collisions == YES) {
