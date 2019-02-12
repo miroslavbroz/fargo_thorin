@@ -196,6 +196,7 @@ char *plfile;
   fclose (input);
   sprintf (filename, "%snbody.orbits.dat", OUTPUTDIR);
   plout = fopenp (filename, "w");     // "w" should empty the file if it exists 
+  MassTaper = 1.0;
   OutputElements (rsim);
   sprintf (filename, "%snbody.discard.dat", OUTPUTDIR);
   discard = fopenp (filename, "w");
@@ -242,6 +243,7 @@ int nrestart;
   rdenominv = 1.0/(4.0*PI*rho);
   sprintf (filename, "%snbody.orbits.dat", OUTPUTDIR);
   plout = fopenp (filename, "a");     // "a" won't empty the file if it exists
+  MassTaper = 1.0;
   OutputElements (rsim);
   sprintf (filename, "%snbody.discard.dat", OUTPUTDIR);
   discard = fopenp (filename, "a");
@@ -431,7 +433,8 @@ struct reb_simulation *rsim;
         particles[i].hash, PhysicalTime, orbit.a, orbit.e, orbit.inc, \
         orbit.Omega, orbit.omega, orbit.f, \
         particles[i].m*MassTaper, particles[i].gas*MassTaper, particles[i].solid*MassTaper, \
-        particles[i].r, particles[i].x, particles[i].y, particles[i].z, particles[i].vx, particles[i].vy, particles[i].vz);
+        particles[i].r, particles[i].x, particles[i].y, particles[i].z, \
+        particles[i].vx, particles[i].vy, particles[i].vz);
       fflush (plout);
     }
   }
