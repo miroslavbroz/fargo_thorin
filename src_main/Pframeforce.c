@@ -476,8 +476,15 @@ i,j,k,l,m) \
   for (k=0; k<npl; k++) {
     sys->ay[k] = tmparray[k];
   }
-  if (debug == YES)
-    printf("FillForcesArrays: t,x,y,ax,ay = %.8e %.8e %.8e %.8e %.8e\n", PhysicalTime, sys->x[0], sys->y[0], sys->ax[0], sys->ay[0]);
+  if (debug == YES) {
+    x = sys->x[0];
+    y = sys->y[0];
+    ax = sys->ax[0];
+    ay = sys->ay[0];
+    ar = (x*ax + y*ay)/sqrt(x*x+y*y);
+    at = (x*ay - y*ax)/sqrt(x*x+y*y);
+    printf("FillForcesArrays: t,x,y,ax,ay,ar,at = %.8e %.8e %.8e  %.8e %.8e  %.8e %.8e\n", PhysicalTime, sys->x[0], sys->y[0], sys->ax[0], sys->ay[0], ar, at);
+  }
   // correct the disk acceleration using the indirect terms
   axindir = IndirectTerm.x;
   ayindir = IndirectTerm.y;

@@ -258,7 +258,7 @@ real dt;
 	  dq[lq] = 0.0;
       }
     }
-    for (i = 0; i < nr; i++) {
+    for (i = 1; i < nr; i++) {
       l = j+i*ns;
       lq= i+j*nr;
       lip = l+ns;
